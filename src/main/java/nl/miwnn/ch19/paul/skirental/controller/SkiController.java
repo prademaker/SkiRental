@@ -2,6 +2,7 @@ package nl.miwnn.ch19.paul.skirental.controller;
 
 import jakarta.validation.Valid;
 import nl.miwnn.ch19.paul.skirental.model.Ski;
+import nl.miwnn.ch19.paul.skirental.repository.SkiRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -10,8 +11,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Paul Rademaker
@@ -21,67 +22,68 @@ import java.util.List;
 
 @Controller
 public class SkiController {
-    private final List<Ski> skis = new ArrayList<>();
-    private static final Logger log =
-            LoggerFactory.getLogger(SkiController.class);
+    private static final Logger log = LoggerFactory.getLogger(SkiController.class);
+    private final SkiRepository skiRepository;
 
-    public SkiController() {
-        skis.add(new Ski("Nordica", "Enforcer 99", "All-mountain"));
-        skis.add(new Ski("K2", "Mindbender 89TI", "All-mountain"));
-        skis.add(new Ski("Fischer", "Ranger 90", "All-mountain"));
-        skis.add(new Ski("Atomic", "Bent 90", "All-mountain"));
-        skis.add(new Ski("Black Crows", "Camox", "All-mountain"));
+    public SkiController(SkiRepository skiRepository) {
+    this.skiRepository = skiRepository;
     }
+
 
     @GetMapping("/ski")
     public String showSkiOverview(
         @RequestParam(required = false) String query,
         Model model) {
-            List<Ski> displaySkis;
+            List<Ski> skis;
+
         if (query != null && !query.isBlank()) {
-            log.debug("Zoeken op query: {}", query);
-            displaySkis = skis.stream()
-                    .filter(book -> book.getMerk()
+            skis = skiRepository.findAll().stream()
+                    .filter(ski -> ski.getMerk()
                             .toLowerCase()
                             .contains(query.toLowerCase()))
                     .toList();
         } else {
-            displaySkis = skis;
+            skis = skiRepository.findAll();
         }
         log.debug("Skioverzicht opgevraagd, {} skis beschikbaar",
                 skis.size());
         model.addAttribute("paginaTitel", "Ski overzicht");
         model.addAttribute("verhuurNaam", "Rent-a-ski Sappemeer");
-        model.addAttribute("skis", displaySkis);
+
+        model.addAttribute("skis", skis);
+        model.addAttribute("query", query);
         return "ski";
     }
 
     @GetMapping("/ski/add")
-    public String showAddBookForm(Model model) {
+    public String showAddSkiForm(Model model) {
         log.debug("Formulier voor nieuwe ski opgevraagd");
         model.addAttribute("ski", new Ski());
         return "add-edit-ski";
     }
 
-    @GetMapping("/ski/edit/{merk}")
-    public String showEditForm(@PathVariable (required = false) String merk, Model model) {
-        log.info("Bewerkformulier geopend voor: {}", merk);
-        Ski skiToEdit = skis.stream()
-                .filter(ski -> ski.getMerk().equals(merk))
-                .findFirst()
-                .orElse(null);
-        if (skiToEdit == null) {
-            log.warn("Ski niet gevonden voor bewerken: {}", merk);
+    @GetMapping("/ski/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        log.info("Bewerkformulier geopend voor: {}", id);
+
+        Optional<Ski> skiToEdit = skiRepository.findById(id);
+
+        if (skiToEdit.isEmpty()) {
+            log.warn("Ski met id: {} is niet gevonden voor bewerking", id);
+            redirectAttributes.addFlashAttribute("skiNotFoundForEditing",
+                    String.format("De ski met id: %d kon niet gevonden worden om te bewerken.", id));
             return "redirect:/ski";
         }
+
         model.addAttribute("ski", skiToEdit);
         return "add-edit-ski";
     }
 
-    @GetMapping("/ski/delete/{merk}")
-    public String deleteSki(@PathVariable @ModelAttribute String merk, RedirectAttributes redirectAttributes) {
-        log.info("Verwijderverzoek ontvangen voor ski: {}", merk);
-        skis.removeIf(ski -> ski.getMerk().equals(merk));
+
+    @GetMapping("/ski/delete/{id}")
+    public String deleteSki(@PathVariable @ModelAttribute Long id, RedirectAttributes redirectAttributes) {
+        log.info("Verwijderverzoek ontvangen voor ski: {}", id);
+        skiRepository.deleteById(id);
         redirectAttributes.addFlashAttribute(
                 "successMessage", "Ski succesvol verwijderd!");
         return "redirect:/ski";
@@ -98,13 +100,8 @@ public class SkiController {
             return "add-edit-ski";
         }
 
-        for (int i = 0; i < skis.size(); i++) {
-            if (skis.get(i).getMerk().equals(ski.getMerk())) {
-                skis.set(i, ski);
-                return "redirect:/ski";
-            }
-        }
-        skis.add(ski);
+       skiRepository.save(ski);
+        log.info("Ski opgeslagen: {}", ski.getMerk());
         redirectAttributes.addFlashAttribute("successMessage", "Ski succesvol toegevoegd!");
         return "redirect:/ski";
     }

@@ -21,7 +21,7 @@ public class IndexController {
     @GetMapping("/")
         public String showIndex (Model model){
             log.debug("De startpagina is geladen!");
-            log.info("De startpagina is geladen om {}", LocalDate.now());
+            log.info("De startpagina is geladen op {}", LocalDate.now());
             model.addAttribute("naam", "Paul Rademaker");
             model.addAttribute("datum", LocalDate.now().toString());
         return "index";
