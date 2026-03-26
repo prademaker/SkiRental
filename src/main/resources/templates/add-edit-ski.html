@@ -23,18 +23,21 @@
           th:errors="*{model}"
           class="error">
         </span>
+    <span th:if="${#fields.hasErrors('model')}" th:errors="*{model}" class="text-danger"></span>
+
 </div>
-    <div>
-        <label for="type">Type</label>
-        <input type="text" id="type"
-               th:field="*{type}"/>
-        <span th:if="${#fields.hasErrors('type')}"
-              th:errors="*{type}"
-              class="error">
-        </span>
+    <div class="mb-3">
+        <label class="form-label">Types</label><br/>
+        <div th:each="type : ${alleTypes}" class="form-check">
+            <input type="checkbox" class="form-check-input"
+                   th:value="${type.id}"
+                   name="types"
+                   th:checked="${ski.types.contains(type)}"/>
+            <label class="form-check-label" th:text="${type.naam}">type</label>
+        </div>
     </div>
     <button type="submit">Opslaan</button>
 </form>
-<p><a th:href="@{/ski}">Terug naar het overzicht</a></p>
+<p><a th:href="@{/ski/all}">Terug naar het overzicht</a></p>
 </body>
 </html>
