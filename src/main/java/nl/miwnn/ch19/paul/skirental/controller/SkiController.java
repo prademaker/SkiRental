@@ -86,7 +86,6 @@ public class SkiController {
         return "add-edit-ski";
     }
 
-
     @PostMapping("/delete/{id}")
     public String deleteSki(@PathVariable @ModelAttribute Long id, RedirectAttributes redirectAttributes) {
         log.info("Verwijderverzoek ontvangen voor ski: {}", id);

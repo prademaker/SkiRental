@@ -65,13 +65,12 @@ public class CopyController {
         return "redirect:/ski/" + skiId;
     }
 
-    // DIT IS DE NIEUWE ROUTE VOOR SNOWBOARDS
     @PostMapping("/add-snowboard/{snowboardId}")
     public String addSnowboardCopy(@PathVariable Long snowboardId, RedirectAttributes redirectAttributes) {
         snowboardRepository.findById(snowboardId).ifPresent(snowboard -> {
-            copyRepository.save(new Copy(snowboard));
-        });
-        redirectAttributes.addFlashAttribute("successMessage", "Snowboard exemplaar toegevoegd!");
+            copyRepository.save(new Copy(snowboard));});
+        redirectAttributes.addFlashAttribute(
+                "successMessage", "Snowboard exemplaar toegevoegd!");
         return "redirect:/snowboard/" + snowboardId;
     }
 
@@ -88,7 +87,6 @@ public class CopyController {
         return "redirect:/";
     }
 
-    // Handige hulp-methode om te bepalen of we terug moeten naar de ski- of snowboard-pagina
     private String getRedirectUrl(Copy copy) {
         if (copy.getSki() != null) {
             return "redirect:/ski/" + copy.getSki().getId();

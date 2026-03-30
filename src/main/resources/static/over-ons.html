@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
 <head>
     <meta charset="UTF-8">
     <title>Over ons - Ski verhuur</title>
 </head>
 <body>
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            Rent-A-Ski Sappemeer
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link"
+               th:classappend="${activePage == 'skis'} ? 'active fw-bold' : ''"
+               href="/ski/all">Skis</a>
+            <a class="nav-link"
+               th:classappend="${activePage == 'snowboards'} ? 'active fw-bold' : ''"
+               href="/snowboard/all">Snowboards</a>
+            <a class="nav-link"
+               th:classappend="${activePage == 'type'} ? 'active fw-bold' : ''"
+               href="/type">Types</a>
+        </div>
+    </div>
+</nav>
+
     <h1>Contact</h1>
     <p>Ski verhuur Rent-a-ski</p>
     <p>Adres: Ankersmid 76, 9611 LG Sappemeer</p>
