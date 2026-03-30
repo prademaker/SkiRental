@@ -19,6 +19,13 @@ public class SnowboardService {
         this.typeService = typeService;
     }
 
+    public List<Snowboard> getSnowboards(String query) {
+        if (query != null && !query.isBlank()) {
+            return snowboardRepository.findByMerkContainingIgnoreCase(query);
+        }
+        return snowboardRepository.findAll();
+    }
+
     public List<Snowboard> findAll() {
         return snowboardRepository.findAll();
     }
@@ -40,9 +47,16 @@ public class SnowboardService {
     }
 
     public boolean isDuplicate(Snowboard snowboard) {
-        Optional<Snowboard> bestaande = snowboardRepository.findByMerkAndModel(
+        Optional<Snowboard> bestaande = snowboardRepository.findByMerkIgnoreCaseAndModelIgnoreCase(
                 snowboard.getMerk(), snowboard.getModel());
 
-        return bestaande.isPresent() && !bestaande.get().getId().equals(snowboard.getId());
+        if (bestaande.isPresent()) {
+            if (snowboard.getId() == null) {
+                return true;
+            }
+            return !bestaande.get().getId().equals(snowboard.getId());
+        }
+
+        return false;
     }
 }

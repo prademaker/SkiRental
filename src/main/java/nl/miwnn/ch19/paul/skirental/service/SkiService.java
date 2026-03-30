@@ -39,10 +39,6 @@ public class SkiService {
         skiRepository.deleteById(id);
     }
 
-    /**
-     * Controleert of een ski-combinatie al bestaat,
-     * rekening houdend met het feit of we een bestaande ski bewerken.
-     */
     public boolean isDuplicate(Ski ski) {
         Optional<Ski> bestaande = skiRepository.findByMerkAndModel(ski.getMerk(), ski.getModel());
         return bestaande.filter(value -> !value.getId().equals(ski.getId())).isPresent();

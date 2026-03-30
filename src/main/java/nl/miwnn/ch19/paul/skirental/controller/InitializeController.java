@@ -2,14 +2,15 @@ package nl.miwnn.ch19.paul.skirental.controller;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import nl.miwnn.ch19.paul.skirental.model.Copy;
 import nl.miwnn.ch19.paul.skirental.model.Ski;
-import nl.miwnn.ch19.paul.skirental.model.Snowboard; // Vergeet deze import niet
+import nl.miwnn.ch19.paul.skirental.model.Snowboard;
 import nl.miwnn.ch19.paul.skirental.model.Type;
-import nl.miwnn.ch19.paul.skirental.repository.CopyRepository;
-import nl.miwnn.ch19.paul.skirental.repository.SkiRepository;
-import nl.miwnn.ch19.paul.skirental.repository.SnowboardRepository; // Vergeet deze import niet
-import nl.miwnn.ch19.paul.skirental.repository.TypeRepository;
+import nl.miwnn.ch19.paul.skirental.service.CopyService;
+import nl.miwnn.ch19.paul.skirental.service.SkiService;
+import nl.miwnn.ch19.paul.skirental.service.SnowboardService;
+import nl.miwnn.ch19.paul.skirental.service.TypeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -22,32 +23,32 @@ import java.util.List;
 
 @Controller
 public class InitializeController {
+    private static final Logger log = LoggerFactory.getLogger(InitializeController.class);
 
-    private final SkiRepository skiRepository;
-    private final TypeRepository typeRepository;
-    private final CopyRepository copyRepository;
-    private final SnowboardRepository snowboardRepository; // Toegevoegd
+    private final SkiService skiService;
+    private final TypeService typeService;
+    private final CopyService copyService;
+    private final SnowboardService snowboardService;
 
-    public InitializeController(SkiRepository skiRepository,
-                                TypeRepository typeRepository,
-                                CopyRepository copyRepository,
-                                SnowboardRepository snowboardRepository) {
-        this.skiRepository = skiRepository;
-        this.typeRepository = typeRepository;
-        this.copyRepository = copyRepository;
-        this.snowboardRepository = snowboardRepository; // Toegevoegd
+    public InitializeController(SkiService skiService,
+                                TypeService typeService,
+                                CopyService copyService,
+                                SnowboardService snowboardService) {
+        this.skiService = skiService;
+        this.typeService = typeService;
+        this.copyService = copyService;
+        this.snowboardService = snowboardService;
     }
 
     @EventListener(ContextRefreshedEvent.class)
     public void seed() {
-        if (typeRepository.count() == 0) {
+        if (typeService.findAll().isEmpty()) {
             seedTypes();
         }
-        if (skiRepository.count() == 0) {
+        if (skiService.getSkis(null).isEmpty()) {
             seedSkis();
         }
-        // Nieuwe check voor snowboards
-        if (snowboardRepository.count() == 0) {
+        if (snowboardService.findAll().isEmpty()) {
             seedSnowboards();
         }
     }
@@ -60,9 +61,14 @@ public class InitializeController {
                     .withType(Type.class)
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
-            typeRepository.saveAll(csvToBean.parse());
+
+            List<Type> types = csvToBean.parse();
+            for (Type type : types) {
+                typeService.save(type);
+            }
+            log.info("Types geseederd vanuit CSV");
         } catch (IOException e) {
-            throw new RuntimeException("Kon types.csv niet inlezen", e);
+            log.error("Fout bij seeden van types: ", e);
         }
     }
 
@@ -74,23 +80,30 @@ public class InitializeController {
                     .withType(Ski.class)
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
+
             List<Ski> skis = csvToBean.parse();
-            List<Type> types = typeRepository.findAll();
+            List<Type> types = typeService.findAll();
+
             for (int i = 0; i < skis.size(); i++) {
                 Ski ski = skis.get(i);
+
+                // Voeg type toe
                 if (!types.isEmpty()) {
                     ski.getTypes().add(types.get(i % types.size()));
                 }
-                skiRepository.save(ski);
-                copyRepository.save(new Copy(ski));
-                copyRepository.save(new Copy(ski));
+
+                if (!skiService.isDuplicate(ski)) {
+                    skiService.save(ski);
+                    copyService.addSkiCopy(ski.getId());
+                    copyService.addSkiCopy(ski.getId());
+                }
             }
+            log.info("Skis geseederd vanuit CSV");
         } catch (IOException e) {
-            throw new RuntimeException("Kon skis.csv niet inlezen", e);
+            log.error("Fout bij seeden van skis: ", e);
         }
     }
 
-    // NIEUWE METHODE VOOR SNOWBOARDS
     private void seedSnowboards() {
         try {
             ClassPathResource resource = new ClassPathResource("seedData/snowboards.csv");
@@ -101,21 +114,24 @@ public class InitializeController {
                     .build();
 
             List<Snowboard> boards = csvToBean.parse();
-            List<Type> types = typeRepository.findAll();
+            List<Type> types = typeService.findAll();
 
             for (int i = 0; i < boards.size(); i++) {
                 Snowboard board = boards.get(i);
-                // Verdeel de beschikbare types over de boards
+
                 if (!types.isEmpty()) {
                     board.getTypes().add(types.get(i % types.size()));
                 }
-                snowboardRepository.save(board);
-                // Voeg 2 exemplaren toe per board
-                copyRepository.save(new Copy(board));
-                copyRepository.save(new Copy(board));
+
+                if (!snowboardService.isDuplicate(board)) {
+                    snowboardService.save(board);
+                    copyService.addSnowboardCopy(board.getId());
+                    copyService.addSnowboardCopy(board.getId());
+                }
             }
+            log.info("Snowboards geseederd vanuit CSV");
         } catch (IOException e) {
-            throw new RuntimeException("Kon snowboards.csv niet inlezen", e);
+            log.error("Fout bij seeden van snowboards: ", e);
         }
     }
 }

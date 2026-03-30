@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Snowboard overzicht — Rent-A-Ski Sappemeer</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title th:replace="~{fragments/general :: header}"></title>
 </head>
 <body>
 
@@ -14,7 +12,15 @@
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
     <h1 th:text="${paginaTitel}">Snowboard overzicht</h1>
-
+    <form th:action="@{/snowboard/all}" method="get" class="row g-3 mb-4">
+        <div class="col-auto">
+            <input type="text" name="query" th:value="${query}"
+                   class="form-control" placeholder="Zoek op merk...">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Zoek</button>
+        </div>
+    </form>
     <table class="table table-striped">
         <thead>
         <tr>

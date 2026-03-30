@@ -13,4 +13,3 @@ public interface SkiRepository extends JpaRepository<Ski, Long> {
     Optional<Ski> findByMerkAndModel(String merk, String model);
     List<Ski> findByMerkContainingIgnoreCase(String merk);
 }
-

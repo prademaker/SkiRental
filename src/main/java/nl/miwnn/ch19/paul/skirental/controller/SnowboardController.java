@@ -25,10 +25,11 @@ public class SnowboardController {
     }
 
     @GetMapping("/all")
-    public String showOverview(Model model) {
-        model.addAttribute("snowboards", snowboardService.findAll());
+    public String showOverview(@RequestParam(required = false) String query, Model model) {
+        model.addAttribute("snowboards", snowboardService.getSnowboards(query));
         model.addAttribute("paginaTitel", "Snowboard overzicht");
         model.addAttribute("activePage", "snowboards");
+        model.addAttribute("query", query);
         return "snowboard";
     }
 
@@ -66,13 +67,15 @@ public class SnowboardController {
         }
 
         if (snowboardService.isDuplicate(snowboard)) {
-            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
+            bindingResult.rejectValue("model", "duplicate",
+                    "Deze combinatie van merk en model bestaat al.");
             model.addAttribute("alleTypes", snowboardService.getAllTypes());
             return "add-edit-snowboard";
         }
 
         snowboardService.save(snowboard);
-        redirectAttributes.addFlashAttribute("successMessage", "Snowboard succesvol opgeslagen!");
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Snowboard succesvol opgeslagen!");
         return "redirect:/snowboard/all";
     }
 
