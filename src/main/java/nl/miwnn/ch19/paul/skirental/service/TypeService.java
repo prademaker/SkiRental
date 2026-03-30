@@ -20,17 +20,11 @@ public class TypeService {
         return typeRepository.findAll();
     }
 
-    public Optional<Type> findById(Long id) {
-        return typeRepository.findById(id);
-    }
-
     public void save(Type type) {
         typeRepository.save(type);
     }
 
     public void deleteById(Long id) {
-        // Logica: Je zou hier kunnen checken of er nog ski's gekoppeld zijn
-        // aan dit type voordat je het verwijdert.
         typeRepository.deleteById(id);
     }
 }

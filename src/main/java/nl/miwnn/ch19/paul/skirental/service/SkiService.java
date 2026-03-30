@@ -15,7 +15,7 @@ public class SkiService {
     private final SkiRepository skiRepository;
     private final TypeService typeService;
 
-    public SkiService(SkiRepository skiRepository, TypeRepository typeRepository, TypeService typeService) {
+    public SkiService(SkiRepository skiRepository, TypeService typeService) {
         this.skiRepository = skiRepository;
         this.typeService = typeService;
     }
@@ -45,11 +45,7 @@ public class SkiService {
      */
     public boolean isDuplicate(Ski ski) {
         Optional<Ski> bestaande = skiRepository.findByMerkAndModel(ski.getMerk(), ski.getModel());
-        if (bestaande.isPresent()) {
-            // Als het ID verschilt, is het een andere ski met dezelfde naam (duplicaat)
-            return !bestaande.get().getId().equals(ski.getId());
-        }
-        return false;
+        return bestaande.filter(value -> !value.getId().equals(ski.getId())).isPresent();
     }
 
     public void save(Ski ski) {

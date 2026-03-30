@@ -10,10 +10,7 @@ import java.util.Optional;
  * @author Paul Rademaker
  */
 public interface SkiRepository extends JpaRepository<Ski, Long> {
-    Optional<Ski> findSkiByMerk(String merk);
     Optional<Ski> findByMerkAndModel(String merk, String model);
-
-    // Nieuw: Zoeken op merk (ongevoelig voor hoofdletters)
     List<Ski> findByMerkContainingIgnoreCase(String merk);
 }
 
