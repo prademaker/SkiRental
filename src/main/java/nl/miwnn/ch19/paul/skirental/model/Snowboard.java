@@ -2,19 +2,17 @@ package nl.miwnn.ch19.paul.skirental.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Paul Rademaker
- * Holds all attributes about a Ski that the rental may or may not have
+ * Model snowboard about all attributes a board has
  */
-
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"merk", "model"}))
-public class Ski {
+public class Snowboard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,23 +24,30 @@ public class Ski {
     @NotBlank(message = "Model mag niet leeg zijn")
     private String model;
 
-    @NotEmpty(message = "Type mag niet leeg zijn")
     @ManyToMany
     private List<Type> types = new ArrayList<>();
 
-    @OneToMany(mappedBy = "ski", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "snowboard", cascade = CascadeType.ALL)
     private List<Copy> copies = new ArrayList<>();
 
-    @ManyToMany
-    private List<Huurder> huurders = new ArrayList<>();
-
-    public Ski(String merk, String model) {
+    public Snowboard(Long id, String merk, String model, List<Type> types, List<Copy> copies) {
+        this.id = id;
         this.merk = merk;
         this.model = model;
+        this.types = types;
+        this.copies = copies;
     }
 
-    public Ski() {}
+    public Snowboard() {
+    }
 
+    public long getAantalBeschikbaar() {
+        return copies.stream().filter(Copy::isAvailable).count();
+    }
+
+    public long getAantalUitgeleend() {
+        return copies.stream().filter(c -> !c.isAvailable()).count();
+    }
     public Long getId() {
         return id;
     }
@@ -67,6 +72,14 @@ public class Ski {
         this.model = model;
     }
 
+    public List<Type> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<Type> types) {
+        this.types = types;
+    }
+
     public List<Copy> getCopies() {
         return copies;
     }
@@ -74,25 +87,4 @@ public class Ski {
     public void setCopies(List<Copy> copies) {
         this.copies = copies;
     }
-
-    public List<Huurder> getHuurders() {
-        return huurders;
-    }
-
-    public void setHuurders(List<Huurder> huurders) {
-        this.huurders = huurders;
-    }
-
-    public long getAantalBeschikbaar() {
-        return copies.stream().filter(Copy::isAvailable).count();
-    }
-
-    public long getAantalUitgeleend() {
-        return copies.stream().filter(c -> !c.isAvailable()).count();
-    }
-
-    public List<Type> getTypes() { return types; }
-    public void setTypes(List<Type> types) { this.types = types; }
-
 }
-

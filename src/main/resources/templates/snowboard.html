@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Snowboard overzicht — Rent-A-Ski Sappemeer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+
+<nav th:replace="~{fragments/general :: navbar}"></nav>
+
+<div class="container mt-4">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <h1 th:text="${paginaTitel}">Snowboard overzicht</h1>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Merk</th>
+            <th>Model</th>
+            <th>Types</th>
+            <th>Beschikbaar</th>
+            <th>Uitgeleend</th>
+            <th>Totaal</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="snowboard : ${snowboards}">
+            <td th:text="${snowboard.merk}">merk</td>
+            <td th:text="${snowboard.model}">model</td>
+            <td>
+                <span th:each="type, iterStat : ${snowboard.types}">
+                    <span th:text="${type.naam}"></span><span th:if="!${iterStat.last}">, </span>
+                </span>
+            </td>
+            <td th:text="${snowboard.aantalBeschikbaar}">0</td>
+            <td th:text="${snowboard.aantalUitgeleend}">0</td>
+            <td th:text="${snowboard.copies.size()}">0</td>
+            <td class="d-flex gap-2">
+                <a th:href="@{/snowboard/{id}(id=${snowboard.id})}" class="btn btn-sm btn-info">Details</a>
+                <a th:href="@{/snowboard/edit/{id}(id=${snowboard.id})}" class="btn btn-sm btn-warning">Bewerken</a>
+                <form th:action="@{/snowboard/delete/{id}(id=${snowboard.id})}" method="post">
+                    <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/snowboard/add}" class="btn btn-success">Nieuw snowboard toevoegen</a>
+</div>
+
+<footer th:replace="~{fragments/general :: footer}"></footer>
+</body>
+</html>

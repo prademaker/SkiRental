@@ -5,29 +5,31 @@
     <title>Ski toevoegen — Rent-A-Ski</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-<h1>Ski toevoegen</h1>
-<form th:action="@{/ski/save}" method="post"
-      th:object="${ski}">
-    <div>
-        <label for="merk">Merk</label>
-        <input type="text" id="merk" th:field="*{merk}"/>
-        <span th:if="${#fields.hasErrors('merk')}"
-              th:errors="*{merk}"
-              class="error">
-        </span>
-    </div> <div>
-    <label for="model">Model</label>
-    <input type="text" id="model" th:field="*{model}"/>
-    <span th:if="${#fields.hasErrors('model')}"
-          th:errors="*{model}"
-          class="error">
-        </span>
-    <span th:if="${#fields.hasErrors('model')}" th:errors="*{model}" class="text-danger"></span>
+<body class="container mt-4">
 
+<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+<nav th:replace="~{fragments/general :: navbar}"></nav>
+
+<div class="d-flex align-items-center gap-3">
+    <img th:src="@{/images/SkiverhuurLogo.png}" alt="Logo" width="100px" />
+    <h1>Ski toevoegen</h1>
 </div>
+
+<form th:action="@{/ski/save}" method="post" th:object="${ski}" class="mt-3">
     <div class="mb-3">
-        <label class="form-label">Types</label><br/>
+        <label for="merk" class="form-label">Merk</label>
+        <input type="text" id="merk" th:field="*{merk}" class="form-control w-auto"/>
+        <span th:if="${#fields.hasErrors('merk')}" th:errors="*{merk}" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="model" class="form-label">Model</label>
+        <input type="text" id="model" th:field="*{model}" class="form-control w-auto"/>
+        <span th:if="${#fields.hasErrors('model')}" th:errors="*{model}" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Types</label>
         <div th:each="type : ${alleTypes}" class="form-check">
             <input type="checkbox" class="form-check-input"
                    th:value="${type.id}"
@@ -36,8 +38,11 @@
             <label class="form-check-label" th:text="${type.naam}">type</label>
         </div>
     </div>
-    <button type="submit">Opslaan</button>
+
+    <button type="submit" class="btn btn-success">Opslaan</button>
 </form>
-<p><a th:href="@{/ski/all}">Terug naar het overzicht</a></p>
+
+<a th:href="@{/ski/all}" class="btn btn-link mt-3">Terug naar overzicht</a>
+<footer th:replace="~{fragments/general :: footer}"></footer>
 </body>
 </html>

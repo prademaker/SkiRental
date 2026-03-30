@@ -8,8 +8,8 @@
 <body class="container mt-4">
 
 <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-
-<h1 th:text="${ski.merk + ' ' + ski.model}">Ski detail</h1>
+<nav th:replace="~{fragments/general :: navbar}"></nav>
+<h1 th:text="${ski.merk + ' ' + ski.model}"><img th:src="@{/images/SkiverhuurLogo.png}" alt="Logo" width="100px" />Ski detail</h1>
 <p><strong>Types:</strong>
     <span th:each="type, iter : ${ski.types}"
           th:text="${type.naam + (iter.last ? '' : ', ')}">type</span>
@@ -51,6 +51,6 @@
 </form>
 
 <a th:href="@{/ski/all}" class="btn btn-link">Terug naar overzicht</a>
-
+<footer th:replace="~{fragments/general :: footer}"></footer>
 </body>
 </html>

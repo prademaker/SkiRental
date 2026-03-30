@@ -8,8 +8,9 @@
 <body class="container mt-4">
 
 <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+<nav th:replace="~{fragments/general :: navbar}"></nav>
 
-<h1>Ski types</h1>
+<h1><img th:src="@{/images/SkiverhuurLogo.png}" alt="Logo" width="100px" />Ski types</h1>
 
 <table class="table table-striped">
     <thead>
@@ -33,10 +34,11 @@
 <h2>Nieuw type toevoegen</h2>
 <form th:action="@{/type/save}" th:object="${type}" method="post" class="d-flex gap-2">
     <input type="text" th:field="*{naam}" placeholder="Type naam" class="form-control w-auto"/>
+    <span th:if="${#fields.hasErrors('naam')}" th:errors="*{naam}" class="text-danger"></span>
     <button type="submit" class="btn btn-success">Toevoegen</button>
 </form>
 
 <a th:href="@{/ski/all}" class="btn btn-link mt-3">Terug naar overzicht</a>
-
+<footer th:replace="~{fragments/general :: footer}"></footer>
 </body>
 </html>

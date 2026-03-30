@@ -1,12 +1,13 @@
 package nl.miwnn.ch19.paul.skirental.controller;
 
-import nl.miwnn.ch19.paul.skirental.model.Ski;
+import jakarta.validation.Valid;
 import nl.miwnn.ch19.paul.skirental.model.Type;
 import nl.miwnn.ch19.paul.skirental.repository.TypeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -25,20 +26,21 @@ public class TypeController {
     public String showOverview(Model model) {
         model.addAttribute("types", typeRepository.findAll());
         model.addAttribute("type", new Type());
-        return "type";
-    }
-
-
-    @GetMapping("/add")
-    public String addType(Model model){
-        log.debug("Formulier voor nieuw type opgevraagd");
-        model.addAttribute("type", new Type());
-        model.addAttribute("alleTypes", typeRepository.findAll());
+        model.addAttribute("activePage", "type");
+        //model.addAttribute("activePage", type);
         return "type";
     }
 
     @PostMapping("/save")
-    public String saveType(@ModelAttribute Type type, RedirectAttributes redirectAttributes) {
+    public String saveType(@Valid @ModelAttribute Type type,
+                           BindingResult bindingResult,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("types", typeRepository.findAll());
+            return "type";
+        }
+
         typeRepository.save(type);
         redirectAttributes.addFlashAttribute("successMessage", "Type opgeslagen!");
         return "redirect:/type";

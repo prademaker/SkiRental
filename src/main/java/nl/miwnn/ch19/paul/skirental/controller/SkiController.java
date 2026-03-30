@@ -54,9 +54,9 @@ public class SkiController {
                 skis.size());
         model.addAttribute("paginaTitel", "Ski overzicht");
         model.addAttribute("verhuurNaam", "Rent-a-ski Sappemeer");
-
         model.addAttribute("skis", skis);
         model.addAttribute("query", query);
+        model.addAttribute("activePage", "skis");
         return "ski";
     }
 
@@ -87,7 +87,7 @@ public class SkiController {
     }
 
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteSki(@PathVariable @ModelAttribute Long id, RedirectAttributes redirectAttributes) {
         log.info("Verwijderverzoek ontvangen voor ski: {}", id);
         skiRepository.deleteById(id);

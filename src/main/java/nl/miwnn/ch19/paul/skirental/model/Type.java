@@ -1,6 +1,8 @@
 package nl.miwnn.ch19.paul.skirental.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,7 @@ public class Type {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Naam mag niet leeg zijn")
     private String naam;
 
     @ManyToMany(mappedBy = "types")

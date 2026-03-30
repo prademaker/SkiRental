@@ -16,10 +16,18 @@ public class Copy {
     @ManyToOne
     private Ski ski;
 
+    @ManyToOne
+    private Snowboard snowboard;
+
     private Boolean available;
 
     public Copy(Ski ski) {
         this.ski = ski;
+        this.available = true;
+    }
+
+    public Copy(Snowboard snowboard) {
+        this.snowboard = snowboard;
         this.available = true;
     }
 
@@ -48,6 +56,14 @@ public class Copy {
 
     public void setAvailable(Boolean available) {
         this.available = available;
+    }
+
+    public Snowboard getSnowboard() {
+        return snowboard;
+    }
+
+    public void setSnowboard(Snowboard snowboard) {
+        this.snowboard = snowboard;
     }
 }
 

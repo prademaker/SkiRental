@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${snowboard.merk + ' ' + snowboard.model}">Snowboard detail</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+
+<nav th:replace="~{fragments/general :: navbar}"></nav>
+
+<div class="container mt-4">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <h1 th:text="${snowboard.merk + ' ' + snowboard.model}">Snowboard detail</h1>
+    <p><strong>Types:</strong>
+        <span th:each="type, iter : ${snowboard.types}"
+              th:text="${type.naam + (iter.last ? '' : ', ')}">type</span>
+    </p>
+
+    <h2>Exemplaren</h2>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Exemplaar</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="copy : ${snowboard.copies}">
+            <td th:text="${copy.id}">1</td>
+            <td th:text="${copy.available} ? 'Beschikbaar' : 'Uitgeleend'">Status</td>
+            <td class="d-flex gap-2">
+                <form th:if="${copy.available}"
+                      th:action="@{/copies/borrow/{id}(id=${copy.id})}"
+                      method="post">
+                    <button type="submit" class="btn btn-sm btn-success">Lenen</button>
+                </form>
+                <form th:if="${!copy.available}"
+                      th:action="@{/copies/return/{id}(id=${copy.id})}"
+                      method="post">
+                    <button type="submit" class="btn btn-sm btn-secondary">Terugbrengen</button>
+                </form>
+                <form th:action="@{/copies/delete/{id}(id=${copy.id})}" method="post">
+                    <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <form th:action="@{/copies/add-snowboard/{snowboardId}(snowboardId=${snowboard.id})}" method="post" class="mb-3">
+        <button type="submit" class="btn btn-success">Exemplaar toevoegen</button>
+    </form>
+
+    <a th:href="@{/snowboard/all}" class="btn btn-link">Terug naar overzicht</a>
+</div>
+
+<footer th:replace="~{fragments/general :: footer}"></footer>
+</body>
+</html>
