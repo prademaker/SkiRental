@@ -24,6 +24,8 @@ public class Snowboard {
     @NotBlank(message = "Model mag niet leeg zijn")
     private String model;
 
+    private double dailyPrice;
+
     @ManyToMany
     private List<Type> types = new ArrayList<>();
 
@@ -86,5 +88,13 @@ public class Snowboard {
 
     public void setCopies(List<Copy> copies) {
         this.copies = copies;
+    }
+
+    public double getDailyPrice() {
+        return dailyPrice;
+    }
+
+    public void setDailyPrice(double dailyPrice) {
+        this.dailyPrice = dailyPrice;
     }
 }

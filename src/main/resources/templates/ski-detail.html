@@ -9,12 +9,28 @@
 <div class="container mt-4">
 
 <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-<h1 th:text="${ski.merk + ' ' + ski.model}"><img th:src="@{/images/SkiverhuurLogo.png}" alt="Logo" width="100px" />Ski detail</h1>
-<p><strong>Types:</strong>
-    <span th:each="type, iter : ${ski.types}"
-          th:text="${type.naam + (iter.last ? '' : ', ')}">type</span>
-</p>
-<h2>Exemplaren</h2>
+<h1 th:text="${ski.merk + ' ' + ski.model}">
+    <img th:src="@{/images/SkiverhuurLogo.png}" alt="Logo" width="100px" />Ski detail</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <img th:src="${ski.imageUrl != null && !ski.imageUrl.isEmpty()} ? ${ski.imageUrl} :
+            'https://via.placeholder.com/400x300?text=Geen+Foto'"
+                 class="img-fluid rounded shadow"
+                 th:alt="${ski.merk}">
+        </div>
+        <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item">
+                <strong>Merk:</strong> <span th:text="${ski.merk}"></span>
+            </li>
+            <li class="list-group-item">
+                <strong>Model:</strong> <span th:text="${ski.model}"></span>
+            </li>
+            <li class="list-group-item">
+                <strong>Dagprijs:</strong>
+                <span th:text="'€ ' + ${#numbers.formatDecimal(ski.dailyPrice, 1, 2, 'COMMA')}"></span>
+            </li>
+        </ul>
+<h5>Exemplaren</h5>
 <table class="table table-bordered">
     <thead>
     <tr>
@@ -28,11 +44,12 @@
         <td th:text="${copy.id}">1</td>
         <td th:text="${copy.available} ? 'Beschikbaar' : 'Uitgeleend'">Status</td>
         <td class="d-flex gap-2">
-            <form th:if="${copy.available}"
-                  th:action="@{/copies/borrow/{id}(id=${copy.id})}"
-                  method="post">
-                <button type="submit" class="btn btn-sm btn-success">Lenen</button>
-            </form>
+            <!-- In je ski-detail.html of een exemplaren-tabel -->
+            <a th:if="${copy.available}"
+               th:href="@{/rental/add/{id}(id=${copy.id})}"
+               class="btn btn-sm btn-primary">Verhuren</a>
+
+            <span th:if="${!copy.available}" class="badge bg-danger">Uitgeleend</span>
             <form th:if="${!copy.available}"
                   th:action="@{/copies/return/{id}(id=${copy.id})}"
                   method="post">

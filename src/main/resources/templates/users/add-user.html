@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/general :: header}">
+    <title>Nieuwe gebruiker</title>
+</head>
+<body>
+
+<nav th:replace="~{fragments/general :: navbar}"></nav>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Nieuwe gebruiker aanmaken</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/users/add}" method="post" th:object="${newUser}">
+
+                        <!-- Gebruikersnaam -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-bold">Gebruikersnaam</label>
+                            <input type="text" id="username" class="form-control"
+                                   th:field="*{username}" placeholder="Gebruikersnaam..." required/>
+                        </div>
+
+                        <!-- Wachtwoord -->
+                        <div class="mb-3">
+                            <label for="plainPassword" class="form-label fw-bold">Wachtwoord</label>
+                            <input type="password" id="plainPassword" class="form-control"
+                                   th:field="*{plainPassword}" placeholder="Kies een veilig wachtwoord..." required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label fw-bold">Bevestig Wachtwoord</label>
+                            <input type="password" id="confirmPassword"
+                                   class="form-control"
+                                   th:field="*{confirmPassword}"
+                                   placeholder="Herhaal uw wachtwoord..."
+                                   th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid' : ''"
+                                   required/>
+                            <div class="form-text">Wachtwoorden worden veilig versleuteld opgeslagen.</div>
+
+                            <!-- Hier komt de rode tekst als de wachtwoorden niet matchen -->
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('confirmPassword')}"
+                                 th:errors="*{confirmPassword}">
+                                Wachtwoorden komen niet overeen.
+                            </div>
+                        </div>
+
+                        <!-- Rol selectie -->
+                        <div class="mb-3">
+                            <label for="role" class="form-label fw-bold">Rol in het systeem</label>
+                            <select id="role" class="form-select" th:field="*{role}">
+                                <option value="USER">Standaard Gebruiker (USER)</option>
+                                <option value="ADMIN">Beheerder (ADMIN)</option>
+                            </select>
+                        </div>
+
+                        <!-- Knoppen -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a th:href="@{/users}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Annuleren
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                Gebruiker aanmaken
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/general :: footer}"></footer>
+
+</body>
+</html>

@@ -2,18 +2,20 @@ package nl.miwnn.ch19.paul.skirental.controller;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import nl.miwnn.ch19.paul.skirental.model.Ski;
-import nl.miwnn.ch19.paul.skirental.model.Snowboard;
-import nl.miwnn.ch19.paul.skirental.model.Type;
+import nl.miwnn.ch19.paul.skirental.model.*;
+import nl.miwnn.ch19.paul.skirental.repository.CustomerRepository;
+import nl.miwnn.ch19.paul.skirental.repository.UserRepository;
 import nl.miwnn.ch19.paul.skirental.service.CopyService;
 import nl.miwnn.ch19.paul.skirental.service.SkiService;
 import nl.miwnn.ch19.paul.skirental.service.SnowboardService;
 import nl.miwnn.ch19.paul.skirental.service.TypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
@@ -24,24 +26,40 @@ import java.util.List;
 @Controller
 public class InitializeController {
     private static final Logger log = LoggerFactory.getLogger(InitializeController.class);
-
     private final SkiService skiService;
     private final TypeService typeService;
     private final CopyService copyService;
     private final SnowboardService snowboardService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
     public InitializeController(SkiService skiService,
                                 TypeService typeService,
                                 CopyService copyService,
-                                SnowboardService snowboardService) {
+                                SnowboardService snowboardService,
+                                UserRepository userRepository,
+                                PasswordEncoder passwordEncoder
+                                ) {
         this.skiService = skiService;
         this.typeService = typeService;
         this.copyService = copyService;
         this.snowboardService = snowboardService;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @EventListener(ContextRefreshedEvent.class)
     public void seed() {
+        if(userRepository.count() == 0){
+            seedUsers();
+        }
         if (typeService.findAll().isEmpty()) {
             seedTypes();
         }
@@ -51,6 +69,31 @@ public class InitializeController {
         if (snowboardService.findAll().isEmpty()) {
             seedSnowboards();
         }
+        seedCustomers();
+
+    }
+    private void seedCustomers() {
+        customerRepository.save(new Customer("Paul", "Rademaker", "paul@example.com"));
+        customerRepository.save(new Customer("Jan", "Jansen", "jan@example.com"));
+        customerRepository.save(new Customer("Anne", "de Vries", "annet@example.com"));
+        log.info("Testklanten aangemaakt.");
+    }
+
+    private void seedUsers(){
+        RentalUser admin = new RentalUser();
+        admin.setUsername("admin");
+        admin.setPassword(passwordEncoder.encode("geheim123"));
+        admin.setRole("ADMIN");
+
+        userRepository.save(admin);
+        log.info("Standaard admin gebruiker aangemaakt: admin / geheim123");
+
+        RentalUser user = new RentalUser();
+        user.setUsername("paul");
+        user.setPassword(passwordEncoder.encode("wachtwoord123"));
+        user.setRole("USER");
+        userRepository.save(user);
+        log.info("Standaard gebruiker aangemaakt: paul / wachtwoord123");
     }
 
     private void seedTypes() {
@@ -79,6 +122,7 @@ public class InitializeController {
             CsvToBean<Ski> csvToBean = new CsvToBeanBuilder<Ski>(reader)
                     .withType(Ski.class)
                     .withIgnoreLeadingWhiteSpace(true)
+                    .withSeparator(';')
                     .build();
 
             List<Ski> skis = csvToBean.parse();
@@ -87,7 +131,6 @@ public class InitializeController {
             for (int i = 0; i < skis.size(); i++) {
                 Ski ski = skis.get(i);
 
-                // Voeg type toe
                 if (!types.isEmpty()) {
                     ski.getTypes().add(types.get(i % types.size()));
                 }

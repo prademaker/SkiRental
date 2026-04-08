@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/general :: header}"></head>
+<body>
+<nav th:replace="~{fragments/general :: navbar}"></nav>
+
+<div class="container mt-5">
+    <div class="card shadow col-md-8 mx-auto">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">Item Verhuren</h4>
+        </div>
+        <div class="card-body">
+            <h5 class="text-muted mb-4">
+                U verhuurt:
+                <span th:if="${copy.ski}" th:text="${copy.ski.merk} + ' ' + ${copy.ski.model}"></span>
+                <span th:if="${copy.snowboard}" th:text="${copy.snowboard.merk} + ' ' + ${copy.snowboard.model}"></span>
+                (Exemplaar ID: <span th:text="${copy.id}"></span>)
+            </h5>
+
+            <form th:action="@{/rental/add}" th:object="${rental}" method="post">
+                <!-- Verborgen veld voor de Copy ID -->
+                <input type="hidden" th:field="*{copy.id}">
+
+                <!-- Klant Selectie -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Selecteer Klant</label>
+                    <select th:field="*{customer.id}" class="form-select" required>
+                        <option value="">-- Kies een klant --</option>
+                        <option th:each="c : ${customers}"
+                                th:value="${c.id}"
+                                th:text="${c.firstName} + ' ' + ${c.lastName}"></option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <!-- Startdatum -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Begindatum</label>
+                        <input type="date" th:field="*{startDate}" class="form-control" required>
+                    </div>
+
+                    <!-- Einddatum -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Einddatum</label>
+                        <input type="date" th:field="*{endDate}" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a th:href="@{/ski/all}" class="btn btn-outline-secondary">Annuleren</a>
+                    <button type="submit" class="btn btn-success px-5">Verhuur Bevestigen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/general :: footer}"></footer>
+</body>
+</html>

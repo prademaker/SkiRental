@@ -1,6 +1,7 @@
 package nl.miwnn.ch19.paul.skirental.model;
 
 import jakarta.persistence.*;
+import java.util.*;
 
 /**
  * @author Paul Rademaker
@@ -20,6 +21,9 @@ public class Copy {
     private Snowboard snowboard;
 
     private Boolean available;
+
+    @OneToMany(mappedBy = "copy")
+    private List<Rental> rentals = new ArrayList<>();
 
     public Copy(Ski ski) {
         this.ski = ski;
@@ -56,6 +60,10 @@ public class Copy {
 
     public void setAvailable(Boolean available) {
         this.available = available;
+    }
+
+    public List<Rental> getRentals() {
+        return rentals;
     }
 
     public Snowboard getSnowboard() {

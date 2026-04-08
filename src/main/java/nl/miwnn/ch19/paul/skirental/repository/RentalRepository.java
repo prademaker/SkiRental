@@ -1,6 +1,6 @@
 package nl.miwnn.ch19.paul.skirental.repository;
 
-import nl.miwnn.ch19.paul.skirental.model.Huurder;
+import nl.miwnn.ch19.paul.skirental.model.Rental;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -8,5 +8,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * ---- Programma dat dingen doet ----
  * ---- VERVANG MIJ ----
  */
-public interface HuurderRepository extends JpaRepository<Huurder, Long> {
-}
+public interface RentalRepository extends JpaRepository<Rental, Long> {}

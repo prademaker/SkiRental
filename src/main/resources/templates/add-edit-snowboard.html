@@ -35,7 +35,12 @@
                 <label class="form-check-label" th:text="${type.naam}">type</label>
             </div>
         </div>
-
+        <div class="mb-3">
+            <label for="dailyPrice" class="form-label fw-bold">Prijs per dag (€)</label>
+            <input type="number" step="0.01" id="dailyPrice" class="form-control"
+                   th:field="*{dailyPrice}" required placeholder="0.00">
+            <div class="form-text">Voer de huurprijs per dag in.</div>
+        </div>
         <button type="submit" class="btn btn-success">Opslaan</button>
     </form>
 

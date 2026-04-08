@@ -3,6 +3,7 @@ package nl.miwnn.ch19.paul.skirental.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.persistence.Column;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,13 @@ public class Ski {
 
     @ManyToMany
     private List<Huurder> huurders = new ArrayList<>();
+
+    @Column(columnDefinition = "TEXT")
+    private String omschrijving;
+
+    private String imageUrl;
+
+    private double dailyPrice;
 
     public Ski(String merk, String model) {
         this.merk = merk;
@@ -89,6 +97,30 @@ public class Ski {
 
     public long getAantalUitgeleend() {
         return copies.stream().filter(c -> !c.isAvailable()).count();
+    }
+
+    public String getOmschrijving() {
+        return omschrijving;
+    }
+
+    public void setOmschrijving(String omschrijving) {
+        this.omschrijving = omschrijving;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public double getDailyPrice() {
+        return dailyPrice;
+    }
+
+    public void setDailyPrice(double dailyPrice) {
+        this.dailyPrice = dailyPrice;
     }
 
     public List<Type> getTypes() { return types; }

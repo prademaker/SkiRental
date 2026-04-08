@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:fragment="header">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,9 +25,19 @@
             <a class="nav-link"
                th:classappend="${activePage == 'type'} ? 'active fw-bold' : ''"
                href="/type">Types</a>
+            <a class="nav-link"
+               sec:authorize="isAuthenticated()"
+               th:href="@{/logout}">Uitloggen</a>
+            <a class="nav-link"
+               sec:authorize="isAnonymous()"
+               th:href="@{/login}">Inloggen</a>
+            <a class="nav-link"
+               sec:authorize="hasRole('ADMIN')"
+               th:href="@{/users}">Gebruikersbeheer</a>
         </div>
     </div>
 </nav>
+
 
 <footer th:fragment="footer" class="mt-5 py-3 border-top text-muted text-center">
     <p>Skiverhuur &mdash; Sappemeer</p>
