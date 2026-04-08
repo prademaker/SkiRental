@@ -2,6 +2,7 @@ package nl.miwnn.ch19.paul.skirental.controller;
 
 import jakarta.validation.Valid;
 import nl.miwnn.ch19.paul.skirental.model.Ski;
+import nl.miwnn.ch19.paul.skirental.service.FileStorageService;
 import nl.miwnn.ch19.paul.skirental.service.SkiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -27,9 +29,11 @@ public class SkiController {
     private static final Logger log = LoggerFactory.getLogger(SkiController.class);
 
     private final SkiService skiService;
+    private final FileStorageService fileStorageService;
 
-    public SkiController(SkiService skiService) {
+    public SkiController(SkiService skiService, FileStorageService fileStorageService) {
         this.skiService = skiService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping("/all")
@@ -69,22 +73,22 @@ public class SkiController {
     }
 
     @PostMapping("/save")
-    public String saveSki(@Valid @ModelAttribute("ski") Ski ski, BindingResult bindingResult,
-                          Model model, RedirectAttributes redirectAttributes) {
+    public String saveSki(@Valid @ModelAttribute("ski") Ski ski,
+                          BindingResult bindingResult,
+                          @RequestParam("imageFile") MultipartFile imageFile, // Nieuw!
+                          RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("alleTypes", skiService.getAllTypes());
             return "add-edit-ski";
         }
 
-        if (skiService.isDuplicate(ski)) {
-            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
-            model.addAttribute("alleTypes", skiService.getAllTypes());
-            return "add-edit-ski";
+        // Check of er een bestand is geüpload
+        if (!imageFile.isEmpty()) {
+            String filename = fileStorageService.save(imageFile);
+            ski.setImageUrl("/uploads/" + filename); // Sla het virtuele pad op
         }
 
         skiService.save(ski);
-        redirectAttributes.addFlashAttribute("successMessage", "Ski succesvol opgeslagen!");
         return "redirect:/ski/all";
     }
 

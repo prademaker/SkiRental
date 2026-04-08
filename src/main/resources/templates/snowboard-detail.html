@@ -1,60 +1,137 @@
 <!DOCTYPE html>
-<html lang="nl" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title th:replace="~{fragments/general :: header}"></title>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/general :: header}">
+    <title th:text="'Details: ' + ${snowboard.merk} + ' ' + ${snowboard.model}">Snowboard Detail</title>
 </head>
 <body>
 
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/snowboard/all}">Snowboards</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${snowboard.merk}">Merk</li>
+        </ol>
+    </nav>
 
-    <h1 th:text="${snowboard.merk + ' ' + snowboard.model}">Snowboard detail</h1>
-    <p><strong>Types:</strong>
-        <span th:each="type, iter : ${snowboard.types}"
-              th:text="${type.naam + (iter.last ? '' : ', ')}">type</span>
-    </p>
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0">
+                <img th:src="${snowboard.imageUrl ?: 'https://placehold.co/600x400/212529/ffffff?text=' + snowboard.merk}"
+                     class="img-fluid rounded shadow-sm"
+                     th:alt="${snowboard.merk}"
+                     style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
+            </div>
+        </div>
 
-    <h2>Exemplaren</h2>
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th>Exemplaar</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="copy : ${snowboard.copies}">
-            <td th:text="${copy.id}">1</td>
-            <td th:text="${copy.available} ? 'Beschikbaar' : 'Uitgeleend'">Status</td>
-            <td class="d-flex gap-2">
-                <form th:if="${copy.available}"
-                      th:action="@{/copies/borrow/{id}(id=${copy.id})}"
-                      method="post">
-                    <button type="submit" class="btn btn-sm btn-success">Lenen</button>
-                </form>
-                <form th:if="${!copy.available}"
-                      th:action="@{/copies/return/{id}(id=${copy.id})}"
-                      method="post">
-                    <button type="submit" class="btn btn-sm btn-secondary">Terugbrengen</button>
-                </form>
-                <form th:action="@{/copies/delete/{id}(id=${copy.id})}" method="post">
-                    <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+        <div class="col-md-7">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="mb-0" th:text="${snowboard.merk} + ' ' + ${snowboard.model}">Merk Model</h1>
+                    <div class="mt-2">
+                        <!-- Types weergeven -->
+                        <span th:each="type : ${snowboard.types}"
+                              class="badge bg-secondary me-1"
+                              th:text="${type.naam}">Type</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="fs-2 fw-bold text-primary"
+                          th:text="'€ ' + ${#numbers.formatDecimal(snowboard.dailyPrice, 1, 2, 'COMMA')}">€ 0,00</span>
+                    <div class="text-muted small">per dag</div>
+                </div>
+            </div>
 
-    <form th:action="@{/copies/add-snowboard/{snowboardId}(snowboardId=${snowboard.id})}" method="post" class="mb-3">
-        <button type="submit" class="btn btn-success">Exemplaar toevoegen</button>
-    </form>
+            <hr class="my-4">
 
-    <a th:href="@{/snowboard/all}" class="btn btn-link">Terug naar overzicht</a>
+            <h5>Omschrijving</h5>
+            <p class="text-secondary" th:text="${snowboard.omschrijving} ?: 'Er is nog geen omschrijving beschikbaar voor dit snowboard.'"></p>
+
+            <!-- Voorraad Status Card -->
+            <div class="card bg-light border-0 mt-4">
+                <div class="card-body d-flex justify-content-around text-center">
+                    <div>
+                        <div class="text-muted small uppercase fw-bold">Beschikbaar</div>
+                        <div class="fs-4 fw-bold text-success" th:text="${snowboard.getAantalBeschikbaar()}">0</div>
+                    </div>
+                    <div class="border-start"></div>
+                    <div>
+                        <div class="text-muted small uppercase fw-bold">Uitgeleend</div>
+                        <div class="fs-4 fw-bold text-danger" th:text="${snowboard.getAantalUitgeleend()}">0</div>
+                    </div>
+                    <div class="border-start"></div>
+                    <div>
+                        <div class="text-muted small uppercase fw-bold">Totaal</div>
+                        <div class="fs-4 fw-bold" th:text="${snowboard.copies.size()}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Inventaris & Verhuur</h3>
+            <form sec:authorize="hasRole('ADMIN')" th:action="@{/copies/add-snowboard/{id}(id=${snowboard.id})}" method="post">
+                <button type="submit" class="btn btn-outline-dark btn-sm">+ Exemplaar toevoegen</button>
+            </form>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Exemplaar ID</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">Acties</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="copy : ${snowboard.copies}">
+                    <td class="ps-4">
+                        <span class="text-muted">#</span><span th:text="${copy.id}">1</span>
+                    </td>
+                    <td>
+                            <span th:if="${copy.available}" class="badge rounded-pill bg-success px-3">
+                                <i class="bi bi-check-circle me-1"></i> Beschikbaar
+                            </span>
+                        <span th:if="${!copy.available}" class="badge rounded-pill bg-warning text-dark px-3">
+                                <i class="bi bi-clock-history me-1"></i> Uitgeleend
+                            </span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <!-- Verhuur knop -->
+                        <a th:if="${copy.available}"
+                           th:href="@{/rental/add/{id}(id=${copy.id})}"
+                           class="btn btn-primary btn-sm px-4">
+                            Verhuren
+                        </a>
+
+                        <form sec:authorize="hasRole('ADMIN')"
+                              th:action="@{/copies/delete/{id}(id=${copy.id})}"
+                              method="post" style="display: inline;"
+                              onsubmit="return confirm('Weet je zeker dat je dit exemplaar wilt verwijderen?');">
+                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Verwijderen">
+                                <small>Verwijder</small>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${snowboard.copies.isEmpty()}">
+                    <td colspan="3" class="text-center py-4 text-muted">
+                        Er zijn momenteel geen exemplaren van dit snowboard geregistreerd.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <footer th:replace="~{fragments/general :: footer}"></footer>
+
 </body>
 </html>

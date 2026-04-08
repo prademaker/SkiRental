@@ -2,13 +2,12 @@ package nl.miwnn.ch19.paul.skirental.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Paul Rademaker
- * Model snowboard about all attributes a board has
+ * Model voor een snowboard met alle attributen en koppelingen voor verhuur.
  */
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"merk", "model"}))
@@ -26,21 +25,24 @@ public class Snowboard {
 
     private double dailyPrice;
 
+    private String imageUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String omschrijving;
+
     @ManyToMany
     private List<Type> types = new ArrayList<>();
 
     @OneToMany(mappedBy = "snowboard", cascade = CascadeType.ALL)
     private List<Copy> copies = new ArrayList<>();
 
-    public Snowboard(Long id, String merk, String model, List<Type> types, List<Copy> copies) {
-        this.id = id;
-        this.merk = merk;
-        this.model = model;
-        this.types = types;
-        this.copies = copies;
+    public Snowboard() {
     }
 
-    public Snowboard() {
+    public Snowboard(String merk, String model, double dailyPrice) {
+        this.merk = merk;
+        this.model = model;
+        this.dailyPrice = dailyPrice;
     }
 
     public long getAantalBeschikbaar() {
@@ -50,51 +52,28 @@ public class Snowboard {
     public long getAantalUitgeleend() {
         return copies.stream().filter(c -> !c.isAvailable()).count();
     }
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getMerk() {
-        return merk;
-    }
+    public String getMerk() { return merk; }
+    public void setMerk(String merk) { this.merk = merk; }
 
-    public void setMerk(String merk) {
-        this.merk = merk;
-    }
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
 
-    public String getModel() {
-        return model;
-    }
+    public double getDailyPrice() { return dailyPrice; }
+    public void setDailyPrice(double dailyPrice) { this.dailyPrice = dailyPrice; }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public List<Type> getTypes() {
-        return types;
-    }
+    public String getOmschrijving() { return omschrijving; }
+    public void setOmschrijving(String omschrijving) { this.omschrijving = omschrijving; }
 
-    public void setTypes(List<Type> types) {
-        this.types = types;
-    }
+    public List<Type> getTypes() { return types; }
+    public void setTypes(List<Type> types) { this.types = types; }
 
-    public List<Copy> getCopies() {
-        return copies;
-    }
-
-    public void setCopies(List<Copy> copies) {
-        this.copies = copies;
-    }
-
-    public double getDailyPrice() {
-        return dailyPrice;
-    }
-
-    public void setDailyPrice(double dailyPrice) {
-        this.dailyPrice = dailyPrice;
-    }
+    public List<Copy> getCopies() { return copies; }
+    public void setCopies(List<Copy> copies) { this.copies = copies; }
 }

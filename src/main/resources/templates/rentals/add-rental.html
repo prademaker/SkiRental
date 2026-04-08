@@ -18,10 +18,8 @@
             </h5>
 
             <form th:action="@{/rental/add}" th:object="${rental}" method="post">
-                <!-- Verborgen veld voor de Copy ID -->
                 <input type="hidden" th:field="*{copy.id}">
 
-                <!-- Klant Selectie -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Selecteer Klant</label>
                     <select th:field="*{customer.id}" class="form-select" required>
@@ -33,13 +31,11 @@
                 </div>
 
                 <div class="row">
-                    <!-- Startdatum -->
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Begindatum</label>
                         <input type="date" th:field="*{startDate}" class="form-control" required>
                     </div>
 
-                    <!-- Einddatum -->
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Einddatum</label>
                         <input type="date" th:field="*{endDate}" class="form-control" required>

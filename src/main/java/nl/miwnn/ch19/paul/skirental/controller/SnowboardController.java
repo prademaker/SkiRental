@@ -2,6 +2,7 @@ package nl.miwnn.ch19.paul.skirental.controller;
 
 import jakarta.validation.Valid;
 import nl.miwnn.ch19.paul.skirental.model.Snowboard;
+import nl.miwnn.ch19.paul.skirental.service.FileStorageService;
 import nl.miwnn.ch19.paul.skirental.service.SnowboardService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -19,9 +21,11 @@ public class SnowboardController {
     private static final Logger log = LoggerFactory.getLogger(SnowboardController.class);
 
     private final SnowboardService snowboardService;
+    private final FileStorageService fileStorageService;
 
-    public SnowboardController(SnowboardService snowboardService) {
+    public SnowboardController(SnowboardService snowboardService, FileStorageService fileStorageService) {
         this.snowboardService = snowboardService;
+        this.fileStorageService = fileStorageService;
     }
 
     @GetMapping("/all")
@@ -58,6 +62,7 @@ public class SnowboardController {
     public String saveSnowboard(
             @Valid @ModelAttribute("snowboard") Snowboard snowboard,
             BindingResult bindingResult,
+            @RequestParam("imageFile") MultipartFile imageFile, // Vang het bestand op
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -66,16 +71,32 @@ public class SnowboardController {
             return "add-edit-snowboard";
         }
 
+        // 1. AFHANDELING VAN HET BESTAND
+        if (!imageFile.isEmpty()) {
+            try {
+                // Sla het bestand op en krijg de unieke bestandsnaam terug
+                String filename = fileStorageService.save(imageFile);
+
+                // Sla het pad op in de entiteit (bijv. "/uploads/unieke-naam.jpg")
+                // Dit pad komt overeen met wat we in WebConfig hebben ingesteld
+                snowboard.setImageUrl("/uploads/" + filename);
+
+            } catch (Exception e) {
+                log.error("Fout bij opslaan van afbeelding: " + e.getMessage());
+                // Optioneel: voeg een foutmelding toe voor de gebruiker
+            }
+        }
+
+        // 2. DUPLICAAT CHECK
         if (snowboardService.isDuplicate(snowboard)) {
-            bindingResult.rejectValue("model", "duplicate",
-                    "Deze combinatie van merk en model bestaat al.");
+            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
             model.addAttribute("alleTypes", snowboardService.getAllTypes());
             return "add-edit-snowboard";
         }
 
+        // 3. OPSLAAN
         snowboardService.save(snowboard);
-        redirectAttributes.addFlashAttribute("successMessage",
-                "Snowboard succesvol opgeslagen!");
+        redirectAttributes.addFlashAttribute("successMessage", "Snowboard succesvol opgeslagen!");
         return "redirect:/snowboard/all";
     }
 

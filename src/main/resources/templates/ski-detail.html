@@ -1,74 +1,148 @@
 <!DOCTYPE html>
-<html lang="nl" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title th:replace="~{fragments/general :: header}"></title>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/general :: header}">
+    <title th:text="'Ski Details: ' + ${ski.merk} + ' ' + ${ski.model}">Ski Detail</title>
 </head>
 <body>
+
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
+    <!-- Broodkruimel navigatie -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/ski/all}">Skis</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${ski.merk}">Merk</li>
+        </ol>
+    </nav>
 
-<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-<h1 th:text="${ski.merk + ' ' + ski.model}">
-    <img th:src="@{/images/SkiverhuurLogo.png}" alt="Logo" width="100px" />Ski detail</h1>
     <div class="row">
-        <div class="col-md-4">
-            <img th:src="${ski.imageUrl != null && !ski.imageUrl.isEmpty()} ? ${ski.imageUrl} :
-            'https://via.placeholder.com/400x300?text=Geen+Foto'"
-                 class="img-fluid rounded shadow"
-                 th:alt="${ski.merk}">
+        <!-- Linkerkant: Grote Afbeelding -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0">
+                <!-- Placeholder als er geen afbeelding is -->
+                <img th:src="${ski.imageUrl ?: 'https://placehold.co/600x400/212529/ffffff?text=' + ski.merk}"
+                     class="img-fluid rounded shadow-sm"
+                     th:alt="${ski.merk}"
+                     style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
+            </div>
         </div>
-        <ul class="list-group list-group-flush mb-4">
-            <li class="list-group-item">
-                <strong>Merk:</strong> <span th:text="${ski.merk}"></span>
-            </li>
-            <li class="list-group-item">
-                <strong>Model:</strong> <span th:text="${ski.model}"></span>
-            </li>
-            <li class="list-group-item">
-                <strong>Dagprijs:</strong>
-                <span th:text="'€ ' + ${#numbers.formatDecimal(ski.dailyPrice, 1, 2, 'COMMA')}"></span>
-            </li>
-        </ul>
-<h5>Exemplaren</h5>
-<table class="table table-bordered">
-    <thead>
-    <tr>
-        <th>Exemplaar</th>
-        <th>Status</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="copy : ${ski.copies}">
-        <td th:text="${copy.id}">1</td>
-        <td th:text="${copy.available} ? 'Beschikbaar' : 'Uitgeleend'">Status</td>
-        <td class="d-flex gap-2">
-            <!-- In je ski-detail.html of een exemplaren-tabel -->
-            <a th:if="${copy.available}"
-               th:href="@{/rental/add/{id}(id=${copy.id})}"
-               class="btn btn-sm btn-primary">Verhuren</a>
 
-            <span th:if="${!copy.available}" class="badge bg-danger">Uitgeleend</span>
-            <form th:if="${!copy.available}"
-                  th:action="@{/copies/return/{id}(id=${copy.id})}"
-                  method="post">
-                <button type="submit" class="btn btn-sm btn-secondary">Terugbrengen</button>
+        <!-- Rechterkant: Ski Informatie -->
+        <div class="col-md-7">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="mb-0" th:text="${ski.merk} + ' ' + ${ski.model}">Merk Model</h1>
+                    <div class="mt-2">
+                        <!-- Weergave van de types (bijv. Carve, Slalom) -->
+                        <span th:each="type : ${ski.types}"
+                              class="badge bg-secondary me-1"
+                              th:text="${type.naam}">Type</span>
+                    </div>
+                </div>
+
+                <!-- Prijs per dag (Groot in beeld) -->
+                <div class="text-end">
+                    <span class="fs-2 fw-bold text-primary"
+                          th:text="'€ ' + ${#numbers.formatDecimal(ski.dailyPrice, 1, 2, 'COMMA')}">€ 0,00</span>
+                    <div class="text-muted small">per dag</div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5>Omschrijving</h5>
+            <p class="text-secondary" th:text="${ski.omschrijving} ?: 'Geen omschrijving beschikbaar.'"></p>
+
+            <!-- Snelle Voorraad Status -->
+            <div class="card bg-light border-0 mt-4">
+                <div class="card-body d-flex justify-content-around text-center">
+                    <div>
+                        <div class="text-muted small uppercase fw-bold">Beschikbaar</div>
+                        <div class="fs-4 fw-bold text-success" th:text="${ski.getAantalBeschikbaar()}">0</div>
+                    </div>
+                    <div class="border-start"></div>
+                    <div>
+                        <div class="text-muted small uppercase fw-bold">Verhuurd</div>
+                        <div class="fs-4 fw-bold text-danger" th:text="${ski.getAantalUitgeleend()}">0</div>
+                    </div>
+                    <div class="border-start"></div>
+                    <div>
+                        <div class="text-muted small uppercase fw-bold">Totaal</div>
+                        <div class="fs-4 fw-bold" th:text="${ski.copies.size()}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventaris tabel (Exemplaren) -->
+    <div class="mt-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Exemplaren & Verhuur</h3>
+            <!-- Alleen zichtbaar voor Admins -->
+            <form sec:authorize="hasRole('ADMIN')" th:action="@{/copies/add/{id}(id=${ski.id})}" method="post">
+                <button type="submit" class="btn btn-outline-dark btn-sm">+ Nieuw exemplaar toevoegen</button>
             </form>
-            <form th:action="@{/copies/delete/{id}(id=${copy.id})}" method="post">
-                <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+        </div>
 
-<form th:action="@{/copies/add/{skiId}(skiId=${ski.id})}" method="post" class="mb-3">
-    <button type="submit" class="btn btn-success">Exemplaar toevoegen</button>
-</form>
+        <div class="card shadow-sm border-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">Acties</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="copy : ${ski.copies}">
+                    <td class="ps-4">
+                        <span class="text-muted">#</span><span th:text="${copy.id}">1</span>
+                    </td>
+                    <td>
+                        <!-- Status Badges -->
+                        <span th:if="${copy.available}" class="badge rounded-pill bg-success px-3">
+                                <i class="bi bi-check-circle me-1"></i> Beschikbaar
+                            </span>
+                        <span th:if="${!copy.available}" class="badge rounded-pill bg-warning text-dark px-3">
+                                <i class="bi bi-clock-history me-1"></i> Uitgeleend
+                            </span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <!-- Knop om naar het verhuurscherm te gaan -->
+                        <a th:if="${copy.available}"
+                           th:href="@{/rental/add/{id}(id=${copy.id})}"
+                           class="btn btn-primary btn-sm px-4 shadow-sm">
+                            Verhuren
+                        </a>
 
-<a th:href="@{/ski/all}" class="btn btn-link">Terug naar overzicht</a>
-<footer th:replace="~{fragments/general :: footer}"></footer>
+                        <!-- Verwijder optie voor Admins -->
+                        <form sec:authorize="hasRole('ADMIN')"
+                              th:action="@{/copies/delete/{id}(id=${copy.id})}"
+                              method="post" style="display: inline;"
+                              onsubmit="return confirm('Weet je zeker dat je dit exemplaar wilt verwijderen?');">
+                            <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Verwijderen">
+                                <small>Verwijder</small>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <!-- Melding als er geen exemplaren zijn -->
+                <tr th:if="${ski.copies.isEmpty()}">
+                    <td colspan="3" class="text-center py-4 text-muted small italic">
+                        Er zijn momenteel geen fysieke exemplaren van dit model in de database.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<footer th:replace="~{fragments/general :: footer}"></footer>
+
 </body>
 </html>

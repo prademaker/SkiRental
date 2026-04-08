@@ -14,10 +14,10 @@
     <h1 th:text="${paginaTitel}">Ski overzicht</h1>
 </div>
 
-<form method="get" action="/ski" class="d-flex gap-2 mb-3">
+<form method="get" action="/ski" class="d-flex gap-3 mb-3">
     <input type="text" name="query" th:value="${query}"
            placeholder="Zoek op merk..." class="form-control w-auto"/>
-    <button type="submit" class="btn btn-primary">Zoeken</button>
+    <button type="submit" class="btn btn-primary">Zoek</button>
 </form>
 
 <table class="table table-striped">

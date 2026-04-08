@@ -34,6 +34,7 @@ public class SkiRentalSecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/users/**").hasRole("ADMIN")
+                        .requestMatchers("/", "/ski/all", "/snowboard/all", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
