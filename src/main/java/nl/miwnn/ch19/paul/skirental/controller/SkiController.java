@@ -82,7 +82,6 @@ public class SkiController {
             return "add-edit-ski";
         }
 
-        // Check of er een bestand is geüpload
         if (!imageFile.isEmpty()) {
             String filename = fileStorageService.save(imageFile);
             ski.setImageUrl("/uploads/" + filename); // Sla het virtuele pad op

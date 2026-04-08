@@ -34,9 +34,6 @@ public class Ski {
     @OneToMany(mappedBy = "ski", cascade = CascadeType.ALL)
     private List<Copy> copies = new ArrayList<>();
 
-    @ManyToMany
-    private List<Huurder> huurders = new ArrayList<>();
-
     @Column(columnDefinition = "TEXT")
     private String omschrijving;
 
@@ -81,14 +78,6 @@ public class Ski {
 
     public void setCopies(List<Copy> copies) {
         this.copies = copies;
-    }
-
-    public List<Huurder> getHuurders() {
-        return huurders;
-    }
-
-    public void setHuurders(List<Huurder> huurders) {
-        this.huurders = huurders;
     }
 
     public long getAantalBeschikbaar() {

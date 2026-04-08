@@ -1,67 +1,77 @@
 <!DOCTYPE html>
 <html lang="nl" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title th:replace="~{fragments/general :: header}"></title>
+<head th:replace="~{fragments/general :: header}">
+    <title th:text="${paginaTitel}">Ski overzicht</title>
 </head>
 <body>
+
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
+    <!-- Berichten -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-
-<div class="d-flex align-items-center gap-3">
     <h1 th:text="${paginaTitel}">Ski overzicht</h1>
+
+    <form th:action="@{/ski/all}" method="get" class="row g-3 mb-4">
+        <div class="col-auto">
+            <input type="text" name="query" th:value="${query}"
+                   class="form-control" placeholder="Zoek op merk...">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Zoek</button>
+            <a th:href="@{/ski/all}" class="btn btn-outline-secondary">Wissen</a>
+        </div>
+    </form>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Merk</th>
+            <th>Model</th>
+            <th>Types</th>
+            <th>Beschikbaar</th>
+            <th>Uitgeleend</th>
+            <th>Totaal</th>
+            <th>Acties</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ski : ${skis}">
+            <td th:text="${ski.merk}">merk</td>
+            <td th:text="${ski.model}">model</td>
+            <td>
+                <span th:each="type, iterStat : ${ski.types}">
+                    <span th:text="${type.naam}"></span><span th:if="!${iterStat.last}">, </span>
+                </span>
+            </td>
+            <td th:text="${ski.aantalBeschikbaar}">0</td>
+            <td th:text="${ski.aantalUitgeleend}">0</td>
+            <td th:text="${ski.copies.size()}">0</td>
+            <td>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/ski/{id}(id=${ski.id})}" class="btn btn-sm btn-info">Details</a>
+                    <a th:href="@{/ski/edit/{id}(id=${ski.id})}" class="btn btn-sm btn-warning">Bewerken</a>
+                    <form th:action="@{/ski/delete/{id}(id=${ski.id})}" method="post"
+                          onsubmit="return confirm('Weet je het zeker?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-4">
+        <a th:href="@{/ski/add}" class="btn btn-success">Nieuwe ski toevoegen</a>
+    </div>
+
+    <div class="mt-3">
+        <a href="/" class="btn btn-link ps-0">Terug naar de startpagina</a>
+    </div>
 </div>
 
-<form method="get" action="/ski" class="d-flex gap-3 mb-3">
-    <input type="text" name="query" th:value="${query}"
-           placeholder="Zoek op merk..." class="form-control w-auto"/>
-    <button type="submit" class="btn btn-primary">Zoek</button>
-</form>
-
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Merk</th>
-        <th>Model</th>
-        <th>Type</th>
-        <th>Beschikbaar</th>
-        <th>Uitgeleend</th>
-        <th>Totaal</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="ski : ${skis}">
-        <td th:text="${ski.merk}">merk</td>
-        <td th:text="${ski.model}">model</td>
-        <td>
-            <span th:each="type, iterStat : ${ski.types}">
-                <span th:text="${type.naam}"></span><span th:if="!${iterStat.last}">, </span>
-            </span>
-        </td>
-        <td th:text="${ski.aantalBeschikbaar}">0</td>
-        <td th:text="${ski.aantalUitgeleend}">0</td>
-        <td th:text="${ski.copies.size()}">0</td>
-        <td class="d-flex gap-2">
-            <a th:href="@{/ski/{id}(id=${ski.id})}"
-               class="btn btn-sm btn-info">Details</a>
-            <a th:href="@{/ski/edit/{id}(id=${ski.id})}"
-               class="btn btn-sm btn-warning">Bewerken</a>
-            <form th:action="@{/ski/delete/{id}(id=${ski.id})}" method="post">
-                <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-    <p><a th:href="@{/ski/add}" class="btn btn-success">Nieuwe ski toevoegen</a>
-    <a th:href="@{/type}" class="btn btn-success">Nieuw type toevoegen</a></p>
-
-<a href="/" class="btn btn-link">Terug naar de startpagina</a>
 <footer th:replace="~{fragments/general :: footer}"></footer>
-</div>
 </body>
 </html>

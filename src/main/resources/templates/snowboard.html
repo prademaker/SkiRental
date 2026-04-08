@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title th:replace="~{fragments/general :: header}"></title>
+<head th:replace="~{fragments/general :: header}">
+    <title th:text="${paginaTitel}">Snowboard overzicht</title>
 </head>
 <body>
 
@@ -12,6 +12,7 @@
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
     <h1 th:text="${paginaTitel}">Snowboard overzicht</h1>
+
     <form th:action="@{/snowboard/all}" method="get" class="row g-3 mb-4">
         <div class="col-auto">
             <input type="text" name="query" th:value="${query}"
@@ -19,8 +20,10 @@
         </div>
         <div class="col-auto">
             <button type="submit" class="btn btn-primary">Zoek</button>
+            <a th:href="@{/snowboard/all}" class="btn btn-outline-secondary">Wissen</a>
         </div>
     </form>
+
     <table class="table table-striped">
         <thead>
         <tr>
@@ -30,7 +33,7 @@
             <th>Beschikbaar</th>
             <th>Uitgeleend</th>
             <th>Totaal</th>
-            <th></th>
+            <th>Acties</th>
         </tr>
         </thead>
         <tbody>
@@ -45,21 +48,27 @@
             <td th:text="${snowboard.aantalBeschikbaar}">0</td>
             <td th:text="${snowboard.aantalUitgeleend}">0</td>
             <td th:text="${snowboard.copies.size()}">0</td>
-            <td class="d-flex gap-2">
-                <a th:href="@{/snowboard/{id}(id=${snowboard.id})}" class="btn btn-sm btn-info">Details</a>
-                <a th:href="@{/snowboard/edit/{id}(id=${snowboard.id})}" class="btn btn-sm btn-warning">Bewerken</a>
-                <form th:action="@{/snowboard/delete/{id}(id=${snowboard.id})}" method="post">
-                    <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
-                </form>
+            <td>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/snowboard/{id}(id=${snowboard.id})}" class="btn btn-sm btn-info">Details</a>
+                    <a th:href="@{/snowboard/edit/{id}(id=${snowboard.id})}" class="btn btn-sm btn-warning">Bewerken</a>
+                    <form th:action="@{/snowboard/delete/{id}(id=${snowboard.id})}" method="post"
+                          onsubmit="return confirm('Weet je het zeker?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
+                    </form>
+                </div>
             </td>
         </tr>
         </tbody>
     </table>
 
-   <p> <a th:href="@{/snowboard/add}" class="btn btn-success">Nieuw snowboard toevoegen</a>
-    <a th:href="@{/type}" class="btn btn-success">Nieuw type toevoegen</a></p>
-    <a href="/" class="btn btn-link">Terug naar de startpagina</a>
+    <div class="mt-4">
+        <a th:href="@{/snowboard/add}" class="btn btn-success">Nieuw snowboard toevoegen</a>
+    </div>
 
+    <div class="mt-3">
+        <a href="/" class="btn btn-link ps-0">Terug naar de startpagina</a>
+    </div>
 </div>
 
 <footer th:replace="~{fragments/general :: footer}"></footer>

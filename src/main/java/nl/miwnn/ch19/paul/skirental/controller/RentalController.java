@@ -14,8 +14,6 @@ import java.time.LocalDate;
 
 /**
  * @author Paul Rademaker
- * ---- Programma dat dingen doet ----
- * ---- VERVANG MIJ ----
  */
 
 @Controller
