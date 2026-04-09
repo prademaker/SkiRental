@@ -1,76 +1,151 @@
 <!DOCTYPE html>
-<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<html lang="nl" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/general :: header}">
-    <title th:text="${paginaTitel}">Snowboard overzicht</title>
+    <title th:text="${paginaTitel}">Snowboard Overzicht</title>
 </head>
 <body>
 
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <!-- Alerts -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-    <h1 th:text="${paginaTitel}">Snowboard overzicht</h1>
+    <!-- Header met knop -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Snowboard Overzicht</h1>
+        <button type="button" class="btn btn-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#addSnowboardModal">
+            <i class="bi bi-plus-lg"></i> Nieuw snowboard toevoegen
+        </button>
+    </div>
 
+    <!-- Zoekformulier -->
     <form th:action="@{/snowboard/all}" method="get" class="row g-3 mb-4">
         <div class="col-auto">
-            <input type="text" name="query" th:value="${query}"
-                   class="form-control" placeholder="Zoek op merk...">
+            <input type="text" name="query" th:value="${query}" class="form-control" placeholder="Zoek op merk...">
         </div>
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Zoek</button>
+            <button type="submit" class="btn btn-primary px-4">Zoek</button>
             <a th:href="@{/snowboard/all}" class="btn btn-outline-secondary">Wissen</a>
         </div>
     </form>
 
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Merk</th>
-            <th>Model</th>
-            <th>Types</th>
-            <th>Beschikbaar</th>
-            <th>Uitgeleend</th>
-            <th>Totaal</th>
-            <th>Acties</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="snowboard : ${snowboards}">
-            <td th:text="${snowboard.merk}">merk</td>
-            <td th:text="${snowboard.model}">model</td>
-            <td>
-                <span th:each="type, iterStat : ${snowboard.types}">
-                    <span th:text="${type.naam}"></span><span th:if="!${iterStat.last}">, </span>
-                </span>
-            </td>
-            <td th:text="${snowboard.aantalBeschikbaar}">0</td>
-            <td th:text="${snowboard.aantalUitgeleend}">0</td>
-            <td th:text="${snowboard.copies.size()}">0</td>
-            <td>
-                <div class="d-flex gap-2">
-                    <a th:href="@{/snowboard/{id}(id=${snowboard.id})}" class="btn btn-sm btn-info">Details</a>
-                    <a th:href="@{/snowboard/edit/{id}(id=${snowboard.id})}" class="btn btn-sm btn-warning">Bewerken</a>
-                    <form th:action="@{/snowboard/delete/{id}(id=${snowboard.id})}" method="post"
-                          onsubmit="return confirm('Weet je het zeker?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div class="mt-4">
-        <a th:href="@{/snowboard/add}" class="btn btn-success">Nieuw snowboard toevoegen</a>
+    <!-- Tabel -->
+    <div class="card shadow-sm border-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th class="ps-4">Merk</th>
+                <th>Model</th>
+                <th>Types</th>
+                <th class="text-center">Beschikbaar</th>
+                <th class="text-end pe-4">Acties</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="snowboard : ${snowboards}">
+                <td class="ps-4 fw-bold" th:text="${snowboard.merk}">merk</td>
+                <td th:text="${snowboard.model}">model</td>
+                <td>
+                    <span th:each="type, iterStat : ${snowboard.types}" class="badge bg-secondary me-1" th:text="${type.naam}"></span>
+                </td>
+                <td class="text-center">
+                    <span class="badge rounded-pill bg-success" th:text="${snowboard.getAantalBeschikbaar()}">0</span>
+                </td>
+                <td class="text-end pe-4">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/snowboard/{id}(id=${snowboard.id})}" class="btn btn-sm btn-info text-white">Details</a>
+                        <a th:href="@{/snowboard/edit/{id}(id=${snowboard.id})}" class="btn btn-sm btn-warning">Bewerken</a>
+                        <form th:action="@{/snowboard/delete/{id}(id=${snowboard.id})}" method="post"
+                              onsubmit="return confirm('Weet je zeker dat je dit snowboard wilt verwijderen?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Verwijderen</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${snowboards.isEmpty()}">
+                <td colspan="5" class="text-center py-5 text-muted">Geen snowboards gevonden.</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
-    <div class="mt-3">
+    <div class="mt-4">
         <a href="/" class="btn btn-link ps-0">Terug naar de startpagina</a>
     </div>
 </div>
 
+<!-- MODAL VOOR NIEUW SNOWBOARD -->
+<div class="modal fade" id="addSnowboardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Nieuw Snowboard Toevoegen</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/snowboard/save}" th:object="${snowboard}" method="post" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Merk</label>
+                            <input type="text" th:field="*{merk}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('merk')} ? 'is-invalid' : ''" required>
+                            <div th:errors="*{merk}" class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Model</label>
+                            <input type="text" th:field="*{model}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('model')} ? 'is-invalid' : ''" required>
+                            <div th:errors="*{model}" class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Prijs per dag (€)</label>
+                            <input type="number" step="0.01" th:field="*{dailyPrice}" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Types</label>
+                            <div class="d-flex flex-wrap gap-2 border rounded p-2 bg-light">
+                                <div th:each="t : ${alleTypes}" class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:field="*{types}" th:value="${t.id}" th:id="'sbtype' + ${t.id}">
+                                    <label class="form-check-label" th:for="'sbtype' + ${t.id}" th:text="${t.naam}"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Omschrijving</label>
+                        <textarea th:field="*{omschrijving}" class="form-control" rows="3" placeholder="Informatie over flex, shape, etc."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Afbeelding</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+                    <button type="submit" class="btn btn-dark px-4">Snowboard Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="~{fragments/general :: footer}"></footer>
+
+<!-- Script om modal te openen bij fouten -->
+<script th:if="${#fields.hasErrors('${snowboard.*}')}">
+    document.addEventListener("DOMContentLoaded", function() {
+        var addSnowboardModal = new bootstrap.Modal(document.getElementById('addSnowboardModal'));
+        addSnowboardModal.show();
+    });
+</script>
+
 </body>
 </html>

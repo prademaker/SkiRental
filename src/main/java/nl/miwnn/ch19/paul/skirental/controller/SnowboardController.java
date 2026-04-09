@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/snowboard")
 public class SnowboardController {
@@ -30,74 +32,66 @@ public class SnowboardController {
 
     @GetMapping("/all")
     public String showOverview(@RequestParam(required = false) String query, Model model) {
-        model.addAttribute("snowboards", snowboardService.getSnowboards(query));
-        model.addAttribute("paginaTitel", "Snowboard overzicht");
-        model.addAttribute("activePage", "snowboards");
+        List<Snowboard> boards = snowboardService.getSnowboards(query);
+
+        model.addAttribute("snowboards", boards);
         model.addAttribute("query", query);
+        model.addAttribute("paginaTitel", "Snowboard Overzicht");
+        model.addAttribute("activePage", "snowboards");
+
+        // Nodig voor de modal: als er geen snowboard met fouten uit de flash-attributes komt, maak een nieuwe
+        if (!model.containsAttribute("snowboard")) {
+            model.addAttribute("snowboard", new Snowboard());
+        }
+        model.addAttribute("alleTypes", snowboardService.getAllTypes());
+
         return "snowboard";
     }
 
-    @GetMapping("/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("snowboard", new Snowboard());
-        model.addAttribute("alleTypes", snowboardService.getAllTypes());
-        model.addAttribute("activePage", "snowboards");
-        return "add-edit-snowboard";
+    @PostMapping("/save")
+    public String saveSnowboard(@Valid @ModelAttribute("snowboard") Snowboard snowboard,
+                                BindingResult bindingResult,
+                                @RequestParam("imageFile") MultipartFile imageFile,
+                                RedirectAttributes redirectAttributes) {
+
+        // 1. Check op duplicaten via de service
+        if (snowboardService.isDuplicate(snowboard)) {
+            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            // Sla de fouten op voor na de redirect zodat de modal weer opent
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.snowboard", bindingResult);
+            redirectAttributes.addFlashAttribute("snowboard", snowboard);
+            return "redirect:/snowboard/all";
+        }
+
+        // 2. Bestand opslaan als er een bestand is gekozen
+        if (!imageFile.isEmpty()) {
+            try {
+                String filename = fileStorageService.save(imageFile);
+                snowboard.setImageUrl("/uploads/" + filename);
+            } catch (Exception e) {
+                log.error("Fout bij uploaden snowboard afbeelding: " + e.getMessage());
+            }
+        }
+
+        snowboardService.save(snowboard);
+        redirectAttributes.addFlashAttribute("successMessage", "Snowboard succesvol opgeslagen!");
+        return "redirect:/snowboard/all";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        return snowboardService.findById(id).map(snowboard -> {
-            model.addAttribute("snowboard", snowboard);
+        return snowboardService.findById(id).map(board -> {
+            model.addAttribute("snowboard", board);
             model.addAttribute("alleTypes", snowboardService.getAllTypes());
             model.addAttribute("activePage", "snowboards");
-            return "add-edit-snowboard";
+            return "add-edit-snowboard"; // De aparte pagina voor bewerken
         }).orElseGet(() -> {
             redirectAttributes.addFlashAttribute("errorMessage", "Snowboard niet gevonden.");
             return "redirect:/snowboard/all";
         });
-    }
-
-    @PostMapping("/save")
-    public String saveSnowboard(
-            @Valid @ModelAttribute("snowboard") Snowboard snowboard,
-            BindingResult bindingResult,
-            @RequestParam("imageFile") MultipartFile imageFile, // Vang het bestand op
-            Model model,
-            RedirectAttributes redirectAttributes) {
-
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("alleTypes", snowboardService.getAllTypes());
-            return "add-edit-snowboard";
-        }
-
-        // 1. AFHANDELING VAN HET BESTAND
-        if (!imageFile.isEmpty()) {
-            try {
-                // Sla het bestand op en krijg de unieke bestandsnaam terug
-                String filename = fileStorageService.save(imageFile);
-
-                // Sla het pad op in de entiteit (bijv. "/uploads/unieke-naam.jpg")
-                // Dit pad komt overeen met wat we in WebConfig hebben ingesteld
-                snowboard.setImageUrl("/uploads/" + filename);
-
-            } catch (Exception e) {
-                log.error("Fout bij opslaan van afbeelding: " + e.getMessage());
-                // Optioneel: voeg een foutmelding toe voor de gebruiker
-            }
-        }
-
-        // 2. DUPLICAAT CHECK
-        if (snowboardService.isDuplicate(snowboard)) {
-            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
-            model.addAttribute("alleTypes", snowboardService.getAllTypes());
-            return "add-edit-snowboard";
-        }
-
-        // 3. OPSLAAN
-        snowboardService.save(snowboard);
-        redirectAttributes.addFlashAttribute("successMessage", "Snowboard succesvol opgeslagen!");
-        return "redirect:/snowboard/all";
     }
 
     @PostMapping("/delete/{id}")

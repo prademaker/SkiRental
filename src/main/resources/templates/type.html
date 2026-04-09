@@ -1,45 +1,84 @@
 <!DOCTYPE html>
 <html lang="nl" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title th:replace="~{fragments/general :: header}"></title>
+<head th:replace="~{fragments/general :: header}">
+    <title th:text="${paginaTitel} ?: 'Ski Types'">Ski Types</title>
 </head>
 <body>
+
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <h1 class="mb-4">Wintersport Types</h1>
 
-<h1>Ski types</h1>
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Bestaande Types</h5>
+                </div>
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Naam</th>
+                        <th class="text-end pe-4">Acties</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="type : ${types}">
+                        <td class="ps-4">
+                            <span class="fw-bold" th:text="${type.naam}">naam</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <form th:action="@{/type/delete/{id}(id=${type.id})}" method="post"
+                                  onsubmit="return confirm('' +
+                                   'Weet je zeker dat je dit type wilt verwijderen? ' +
+                                    'Dit kan alleen als er geen materiaal meer aan gekoppeld is.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Verwijderen</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${types.isEmpty()}">
+                        <td colspan="2" class="text-center py-4 text-muted">Geen types gevonden.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Type</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="type : ${types}">
-        <td th:text="${type.naam}">naam</td>
-        <td>
-            <form th:action="@{/type/delete/{id}(id=${type.id})}" method="post">
-                <button type="submit" class="btn btn-sm btn-danger">Verwijderen</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Nieuw type toevoegen</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/type/save}" th:object="${type}" method="post">
+                        <div class="mb-3">
+                            <label for="naam" class="form-label fw-bold">Type Naam</label>
+                            <input type="text" id="naam" th:field="*{naam}"
+                                   placeholder="Bijv. Carve, Slalom, Freestyle"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('naam')} ? 'is-invalid' : ''"
+                                   required/>
+                            <div th:if="${#fields.hasErrors('naam')}" th:errors="*{naam}" class="invalid-feedback"></div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Type Opslaan</button>
+                    </form>
+                </div>
+            </div>
 
-<h2>Nieuw type toevoegen</h2>
-<form th:action="@{/type/save}" th:object="${type}" method="post" class="d-flex gap-2">
-    <input type="text" th:field="*{naam}" placeholder="Type naam" class="form-control w-auto"/>
-    <span th:if="${#fields.hasErrors('naam')}" th:errors="*{naam}" class="text-danger"></span>
-    <button type="submit" class="btn btn-success">Toevoegen</button>
-</form>
-
-<a th:href="@{/ski/all}" class="btn btn-link mt-3">Terug naar overzicht</a>
-<footer th:replace="~{fragments/general :: footer}"></footer>
+            <div class="mt-4">
+                <a th:href="@{/ski/all}" class="btn btn-link ps-0">
+                    <i class="bi bi-arrow-left"></i> Terug naar materiaal overzicht
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
+
+<footer th:replace="~{fragments/general :: footer}"></footer>
+
 </body>
 </html>

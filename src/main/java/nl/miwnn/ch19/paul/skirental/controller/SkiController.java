@@ -16,12 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Optional;
-
-/**
- * @author Paul Rademaker
- */
-
 
 @Controller
 @RequestMapping("/ski")
@@ -40,55 +34,68 @@ public class SkiController {
     public String showSkiOverview(@RequestParam(required = false) String query, Model model) {
         List<Ski> skis = skiService.getSkis(query);
 
-        log.debug("Skioverzicht opgevraagd, {} skis gevonden", skis.size());
-
-        model.addAttribute("paginaTitel", "Ski overzicht");
-        model.addAttribute("verhuurNaam", "Rent-a-ski Sappemeer");
         model.addAttribute("skis", skis);
         model.addAttribute("query", query);
+        model.addAttribute("paginaTitel", "Ski Overzicht");
         model.addAttribute("activePage", "skis");
-        return "ski";
-    }
 
-    @GetMapping("/add")
-    public String showAddSkiForm(Model model) {
-        model.addAttribute("ski", new Ski());
-        model.addAttribute("alleTypes", skiService.getAllTypes());
-        return "add-edit-ski";
-    }
-
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Optional<Ski> skiToEdit = skiService.findById(id);
-
-        if (skiToEdit.isEmpty()) {
-            redirectAttributes.addFlashAttribute("skiNotFoundForEditing",
-                    String.format("Ski %d niet gevonden", id));
-            return "redirect:/ski/all";
+        // Nodig voor de 'Nieuwe Ski' Modal op deze pagina
+        if (!model.containsAttribute("ski")) {
+            model.addAttribute("ski", new Ski());
         }
-
-        model.addAttribute("ski", skiToEdit.get());
         model.addAttribute("alleTypes", skiService.getAllTypes());
-        return "add-edit-ski";
+
+        return "ski";
     }
 
     @PostMapping("/save")
     public String saveSki(@Valid @ModelAttribute("ski") Ski ski,
                           BindingResult bindingResult,
-                          @RequestParam("imageFile") MultipartFile imageFile, // Nieuw!
+                          @RequestParam("imageFile") MultipartFile imageFile,
+                          Model model,
                           RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            return "add-edit-ski";
+            // Als er fouten zijn, sturen we de gebruiker terug naar de overzichtspagina
+            // FlashAttributes zorgen dat de foutmeldingen en de ingevulde data bewaard blijven voor de modal
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.ski", bindingResult);
+            redirectAttributes.addFlashAttribute("ski", ski);
+            return "redirect:/ski/all";
         }
 
+        // 1. Check op duplicaten
+        if (skiService.isDuplicate(ski)) {
+            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.ski", bindingResult);
+            redirectAttributes.addFlashAttribute("ski", ski);
+            return "redirect:/ski/all";
+        }
+
+        // 2. Bestand opslaan
         if (!imageFile.isEmpty()) {
-            String filename = fileStorageService.save(imageFile);
-            ski.setImageUrl("/uploads/" + filename); // Sla het virtuele pad op
+            try {
+                String filename = fileStorageService.save(imageFile);
+                ski.setImageUrl("/uploads/" + filename);
+            } catch (Exception e) {
+                log.error("Upload fout: " + e.getMessage());
+            }
         }
 
         skiService.save(ski);
+        redirectAttributes.addFlashAttribute("successMessage", "Ski succesvol opgeslagen!");
         return "redirect:/ski/all";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        return skiService.findById(id).map(ski -> {
+            model.addAttribute("ski", ski);
+            model.addAttribute("alleTypes", skiService.getAllTypes());
+            return "add-edit-ski"; // Hergebruik je bestaande edit-pagina
+        }).orElseGet(() -> {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ski niet gevonden.");
+            return "redirect:/ski/all";
+        });
     }
 
     @PostMapping("/delete/{id}")
