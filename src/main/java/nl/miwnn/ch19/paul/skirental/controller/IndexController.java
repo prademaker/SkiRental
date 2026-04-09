@@ -10,7 +10,6 @@ import java.time.LocalDate;
 
 /**
  * @author Paul Rademaker
- * ---- VERVANG MIJ ----
  */
 
 @Controller

@@ -43,6 +43,7 @@ public class RentalController {
         model.addAttribute("rental", rental);
         model.addAttribute("customers", customerRepository.findAll());
         model.addAttribute("copy", copy);
+
         return "rentals/add-rental";
     }
 

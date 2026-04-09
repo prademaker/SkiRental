@@ -9,20 +9,9 @@
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
-    <!-- Broodkruimel navigatie -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/ski/all}">Skis</a></li>
-            <li class="breadcrumb-item active" aria-current="page" th:text="${ski.merk}">Merk</li>
-        </ol>
-    </nav>
-
     <div class="row">
-        <!-- Linkerkant: Grote Afbeelding -->
         <div class="col-md-5 mb-4">
             <div class="card shadow-sm border-0">
-                <!-- Placeholder als er geen afbeelding is -->
                 <img th:src="${ski.imageUrl ?: 'https://placehold.co/600x400/212529/ffffff?text=' + ski.merk}"
                      class="img-fluid rounded shadow-sm"
                      th:alt="${ski.merk}"
@@ -30,20 +19,17 @@
             </div>
         </div>
 
-        <!-- Rechterkant: Ski Informatie -->
         <div class="col-md-7">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <h1 class="mb-0" th:text="${ski.merk} + ' ' + ${ski.model}">Merk Model</h1>
                     <div class="mt-2">
-                        <!-- Weergave van de types (bijv. Carve, Slalom) -->
                         <span th:each="type : ${ski.types}"
                               class="badge bg-secondary me-1"
                               th:text="${type.naam}">Type</span>
                     </div>
                 </div>
 
-                <!-- Prijs per dag (Groot in beeld) -->
                 <div class="text-end">
                     <span class="fs-2 fw-bold text-primary"
                           th:text="'€ ' + ${#numbers.formatDecimal(ski.dailyPrice, 1, 2, 'COMMA')}">€ 0,00</span>
@@ -56,7 +42,6 @@
             <h5>Omschrijving</h5>
             <p class="text-secondary" th:text="${ski.omschrijving} ?: 'Geen omschrijving beschikbaar.'"></p>
 
-            <!-- Snelle Voorraad Status -->
             <div class="card bg-light border-0 mt-4">
                 <div class="card-body d-flex justify-content-around text-center">
                     <div>
@@ -78,11 +63,9 @@
         </div>
     </div>
 
-    <!-- Inventaris tabel (Exemplaren) -->
     <div class="mt-5 mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>Exemplaren & Verhuur</h3>
-            <!-- Alleen zichtbaar voor Admins -->
             <form sec:authorize="hasRole('ADMIN')" th:action="@{/copies/add/{id}(id=${ski.id})}" method="post">
                 <button type="submit" class="btn btn-outline-dark btn-sm">+ Nieuw exemplaar toevoegen</button>
             </form>
@@ -103,7 +86,6 @@
                         <span class="text-muted">#</span><span th:text="${copy.id}">1</span>
                     </td>
                     <td>
-                        <!-- Status Badges -->
                         <span th:if="${copy.available}" class="badge rounded-pill bg-success px-3">
                                 <i class="bi bi-check-circle me-1"></i> Beschikbaar
                             </span>
@@ -112,14 +94,12 @@
                             </span>
                     </td>
                     <td class="text-end pe-4">
-                        <!-- Knop om naar het verhuurscherm te gaan -->
                         <a th:if="${copy.available}"
                            th:href="@{/rental/add/{id}(id=${copy.id})}"
                            class="btn btn-primary btn-sm px-4 shadow-sm">
                             Verhuren
                         </a>
 
-                        <!-- Verwijder optie voor Admins -->
                         <form sec:authorize="hasRole('ADMIN')"
                               th:action="@{/copies/delete/{id}(id=${copy.id})}"
                               method="post" style="display: inline;"
@@ -130,7 +110,6 @@
                         </form>
                     </td>
                 </tr>
-                <!-- Melding als er geen exemplaren zijn -->
                 <tr th:if="${ski.copies.isEmpty()}">
                     <td colspan="3" class="text-center py-4 text-muted small italic">
                         Er zijn momenteel geen fysieke exemplaren van dit model in de database.

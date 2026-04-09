@@ -38,36 +38,49 @@ public class SnowboardController {
         model.addAttribute("query", query);
         model.addAttribute("paginaTitel", "Snowboard Overzicht");
         model.addAttribute("activePage", "snowboards");
+        model.addAttribute("alleTypes", snowboardService.getAllTypes());
 
-        // Nodig voor de modal: als er geen snowboard met fouten uit de flash-attributes komt, maak een nieuwe
         if (!model.containsAttribute("snowboard")) {
             model.addAttribute("snowboard", new Snowboard());
         }
-        model.addAttribute("alleTypes", snowboardService.getAllTypes());
 
         return "snowboard";
+    }
+
+    @GetMapping("/{id}")
+    public String showSnowboardDetail(@PathVariable("id") Long id, Model model) {
+        Snowboard board = snowboardService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Snowboard niet gevonden"));
+
+        model.addAttribute("snowboard", board);
+        model.addAttribute("paginaTitel",
+                "Snowboard Details: " + board.getMerk() + " " + board.getModel());
+        model.addAttribute("activePage", "snowboards");
+
+        return "snowboard-detail";
     }
 
     @PostMapping("/save")
     public String saveSnowboard(@Valid @ModelAttribute("snowboard") Snowboard snowboard,
                                 BindingResult bindingResult,
-                                @RequestParam("imageFile") MultipartFile imageFile,
+                                @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
                                 RedirectAttributes redirectAttributes) {
 
-        // 1. Check op duplicaten via de service
         if (snowboardService.isDuplicate(snowboard)) {
-            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
+            bindingResult.rejectValue("model", "duplicate",
+                    "Deze combinatie van merk en model bestaat al.");
         }
 
         if (bindingResult.hasErrors()) {
-            // Sla de fouten op voor na de redirect zodat de modal weer opent
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.snowboard", bindingResult);
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.snowboard",
+                    bindingResult);
             redirectAttributes.addFlashAttribute("snowboard", snowboard);
+            redirectAttributes.addFlashAttribute("modalToOpen",
+                    snowboard.getId() == null ? "#addSnowboardModal" : "#editSnowboardModal");
             return "redirect:/snowboard/all";
         }
 
-        // 2. Bestand opslaan als er een bestand is gekozen
-        if (!imageFile.isEmpty()) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             try {
                 String filename = fileStorageService.save(imageFile);
                 snowboard.setImageUrl("/uploads/" + filename);
@@ -77,36 +90,16 @@ public class SnowboardController {
         }
 
         snowboardService.save(snowboard);
-        redirectAttributes.addFlashAttribute("successMessage", "Snowboard succesvol opgeslagen!");
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Snowboard succesvol opgeslagen!");
         return "redirect:/snowboard/all";
-    }
-
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        return snowboardService.findById(id).map(board -> {
-            model.addAttribute("snowboard", board);
-            model.addAttribute("alleTypes", snowboardService.getAllTypes());
-            model.addAttribute("activePage", "snowboards");
-            return "add-edit-snowboard"; // De aparte pagina voor bewerken
-        }).orElseGet(() -> {
-            redirectAttributes.addFlashAttribute("errorMessage", "Snowboard niet gevonden.");
-            return "redirect:/snowboard/all";
-        });
     }
 
     @PostMapping("/delete/{id}")
     public String deleteSnowboard(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         snowboardService.deleteById(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Snowboard succesvol verwijderd!");
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Snowboard succesvol verwijderd!");
         return "redirect:/snowboard/all";
-    }
-
-    @GetMapping("/{id}")
-    public String snowboardDetail(@PathVariable Long id, Model model) {
-        Snowboard snowboard = snowboardService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        model.addAttribute("snowboard", snowboard);
-        model.addAttribute("activePage", "snowboards");
-        return "snowboard-detail";
     }
 }

@@ -39,7 +39,6 @@ public class SkiController {
         model.addAttribute("paginaTitel", "Ski Overzicht");
         model.addAttribute("activePage", "skis");
 
-        // Nodig voor de 'Nieuwe Ski' Modal op deze pagina
         if (!model.containsAttribute("ski")) {
             model.addAttribute("ski", new Ski());
         }
@@ -48,31 +47,40 @@ public class SkiController {
         return "ski";
     }
 
+    // DEZE METHODE ONTBRAK EN MOET ERBIJ:
+    @GetMapping("/{id}")
+    public String showSkiDetail(@PathVariable("id") Long id, Model model) {
+        Ski ski = skiService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ski niet gevonden"));
+
+        model.addAttribute("ski", ski);
+        model.addAttribute("paginaTitel", "Ski Details: " + ski.getMerk() + " " + ski.getModel());
+        model.addAttribute("activePage", "skis");
+
+        return "ski-detail";
+    }
+
     @PostMapping("/save")
     public String saveSki(@Valid @ModelAttribute("ski") Ski ski,
                           BindingResult bindingResult,
-                          @RequestParam("imageFile") MultipartFile imageFile,
-                          Model model,
+                          @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
                           RedirectAttributes redirectAttributes) {
 
-        if (bindingResult.hasErrors()) {
-            // Als er fouten zijn, sturen we de gebruiker terug naar de overzichtspagina
-            // FlashAttributes zorgen dat de foutmeldingen en de ingevulde data bewaard blijven voor de modal
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.ski", bindingResult);
-            redirectAttributes.addFlashAttribute("ski", ski);
-            return "redirect:/ski/all";
-        }
-
-        // 1. Check op duplicaten
         if (skiService.isDuplicate(ski)) {
-            bindingResult.rejectValue("model", "duplicate", "Deze combinatie van merk en model bestaat al.");
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.ski", bindingResult);
+            bindingResult.rejectValue(
+                    "model", "duplicate", "Deze combinatie van merk en model bestaat al.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.ski",
+                    bindingResult);
             redirectAttributes.addFlashAttribute("ski", ski);
+            // Vertel de HTML welke modal geopend moet worden bij de redirect
+            redirectAttributes.addFlashAttribute("modalToOpen", ski.getId() == null ? "#addSkiModal" : "#editSkiModal");
             return "redirect:/ski/all";
         }
 
-        // 2. Bestand opslaan
-        if (!imageFile.isEmpty()) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             try {
                 String filename = fileStorageService.save(imageFile);
                 ski.setImageUrl("/uploads/" + filename);
@@ -86,30 +94,10 @@ public class SkiController {
         return "redirect:/ski/all";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        return skiService.findById(id).map(ski -> {
-            model.addAttribute("ski", ski);
-            model.addAttribute("alleTypes", skiService.getAllTypes());
-            return "add-edit-ski"; // Hergebruik je bestaande edit-pagina
-        }).orElseGet(() -> {
-            redirectAttributes.addFlashAttribute("errorMessage", "Ski niet gevonden.");
-            return "redirect:/ski/all";
-        });
-    }
-
     @PostMapping("/delete/{id}")
     public String deleteSki(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         skiService.deleteById(id);
         redirectAttributes.addFlashAttribute("successMessage", "Ski succesvol verwijderd!");
         return "redirect:/ski/all";
-    }
-
-    @GetMapping("/{id}")
-    public String skiDetail(@PathVariable Long id, Model model) {
-        Ski ski = skiService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        model.addAttribute("ski", ski);
-        return "ski-detail";
     }
 }

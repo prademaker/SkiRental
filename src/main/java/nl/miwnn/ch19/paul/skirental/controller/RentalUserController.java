@@ -43,6 +43,7 @@ public class RentalUserController {
     public String showUserOverview(Model model) {
         model.addAttribute("users", userRepository.findAll());
         model.addAttribute("newUser", new NewRentalUserDTO());
+        model.addAttribute("activePage", "user");
         return "users/overview";
     }
 

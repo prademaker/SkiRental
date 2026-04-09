@@ -58,7 +58,6 @@ public class CopyController {
 
     @PostMapping("/delete/{id}")
     public String deleteCopy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        // We halen de copy eerst even op om te weten waar we naartoe moeten redirecten na verwijderen
         return copyService.findById(id).map(copy -> {
             String redirectUrl = getRedirectUrl(copy);
             copyService.deleteCopy(id);

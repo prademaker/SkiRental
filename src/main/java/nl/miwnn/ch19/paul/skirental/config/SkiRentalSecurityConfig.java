@@ -25,8 +25,8 @@ public class SkiRentalSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
-                                "/ski/all",
-                                "/snowboard/all",
+                                "/ski/**",
+                                "/snowboard/**",
                                 "/type",
                                 "/css/**",
                                 "/js/**",
@@ -34,7 +34,7 @@ public class SkiRentalSecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/users/**").hasRole("ADMIN")
-                        .requestMatchers("/", "/ski/all", "/snowboard/all", "/uploads/**").permitAll()
+                        .requestMatchers("/", "/ski/**", "/snowboard/**", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

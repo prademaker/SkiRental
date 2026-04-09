@@ -9,18 +9,11 @@
 <nav th:replace="~{fragments/general :: navbar}"></nav>
 
 <div class="container mt-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/snowboard/all}">Snowboards</a></li>
-            <li class="breadcrumb-item active" aria-current="page" th:text="${snowboard.merk}">Merk</li>
-        </ol>
-    </nav>
-
     <div class="row">
         <div class="col-md-5 mb-4">
             <div class="card shadow-sm border-0">
-                <img th:src="${snowboard.imageUrl ?: 'https://placehold.co/600x400/212529/ffffff?text=' + snowboard.merk}"
+                <img th:src="${snowboard.imageUrl ?: 'https://placehold.co/600x400/212529/ffffff?text='
+                    + snowboard.merk}"
                      class="img-fluid rounded shadow-sm"
                      th:alt="${snowboard.merk}"
                      style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
@@ -32,7 +25,6 @@
                 <div>
                     <h1 class="mb-0" th:text="${snowboard.merk} + ' ' + ${snowboard.model}">Merk Model</h1>
                     <div class="mt-2">
-                        <!-- Types weergeven -->
                         <span th:each="type : ${snowboard.types}"
                               class="badge bg-secondary me-1"
                               th:text="${type.naam}">Type</span>
@@ -48,9 +40,9 @@
             <hr class="my-4">
 
             <h5>Omschrijving</h5>
-            <p class="text-secondary" th:text="${snowboard.omschrijving} ?: 'Er is nog geen omschrijving beschikbaar voor dit snowboard.'"></p>
+            <p class="text-secondary"
+               th:text="${snowboard.omschrijving} ?: 'Er is nog geen omschrijving beschikbaar voor dit snowboard.'"></p>
 
-            <!-- Voorraad Status Card -->
             <div class="card bg-light border-0 mt-4">
                 <div class="card-body d-flex justify-content-around text-center">
                     <div>
@@ -75,7 +67,8 @@
     <div class="mt-5 mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>Inventaris & Verhuur</h3>
-            <form sec:authorize="hasRole('ADMIN')" th:action="@{/copies/add-snowboard/{id}(id=${snowboard.id})}" method="post">
+            <form sec:authorize="hasRole('ADMIN')"
+                  th:action="@{/copies/add-snowboard/{id}(id=${snowboard.id})}" method="post">
                 <button type="submit" class="btn btn-outline-dark btn-sm">+ Exemplaar toevoegen</button>
             </form>
         </div>
@@ -103,7 +96,6 @@
                             </span>
                     </td>
                     <td class="text-end pe-4">
-                        <!-- Verhuur knop -->
                         <a th:if="${copy.available}"
                            th:href="@{/rental/add/{id}(id=${copy.id})}"
                            class="btn btn-primary btn-sm px-4">

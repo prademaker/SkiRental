@@ -69,13 +69,18 @@ public class InitializeController {
         if (snowboardService.findAll().isEmpty()) {
             seedSnowboards();
         }
-        seedCustomers();
+        if (customerRepository.count() == 0){
+            seedCustomers();
+        }
 
     }
     private void seedCustomers() {
-        customerRepository.save(new Customer("Paul", "Rademaker", "paul@example.com"));
-        customerRepository.save(new Customer("Jan", "Jansen", "jan@example.com"));
-        customerRepository.save(new Customer("Anne", "de Vries", "annet@example.com"));
+        customerRepository.save(new Customer("Paul", "Rademaker", "paul@example.com",
+                                    192, 92, 43));
+        customerRepository.save(new Customer("Jan", "Jansen", "jan@example.com",
+                                    212, 104, 48));
+        customerRepository.save(new Customer("Henk", "de Vries", "annet@example.com",
+                                    153, 51, 36));
         log.info("Testklanten aangemaakt.");
     }
 
