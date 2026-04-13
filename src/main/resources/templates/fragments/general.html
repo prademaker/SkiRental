@@ -24,10 +24,9 @@
                href="/snowboard/all">Snowboards</a>
 
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                   aria-expanded="false">
-                    Beheer
-                </a>
+                <a class="nav-link dropdown-toggle" sec:authorize="hasRole('ADMIN')"
+                   href="#" role="button" data-bs-toggle="dropdown"
+                   aria-expanded="false"> Beheer </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                     <li><a class="nav-link"
                            th:classappend="${activePage == 'type'} ? 'active fw-bold' : ''"
@@ -41,17 +40,6 @@
                              href="/customer/all" sec:authorize="hasRole('ADMIN')">Klantenbeheer</a></li>
                 </ul>
             </li>
-<!--            <a class="nav-link"-->
-<!--               th:classappend="${activePage == 'type'} ? 'active fw-bold' : ''"-->
-<!--               sec:authorize="hasRole('ADMIN')"-->
-<!--               href="/type">Typebeheer</a>-->
-<!--            <a class="nav-link"-->
-<!--               th:classappend="${activePage == 'user'} ? 'active fw-bold' : ''"-->
-<!--               sec:authorize="hasRole('ADMIN')"-->
-<!--               th:href="@{/users}">Gebruikersbeheer</a>-->
-<!--            <a class="nav-link" th:classappend="${activePage == 'customers'} ? 'active fw-bold' : ''"-->
-<!--               href="/customer/all" sec:authorize="hasRole('ADMIN')">Klantenbeheer</a>-->
-
 
             <a class="nav-link"
                sec:authorize="isAnonymous()"

@@ -76,7 +76,8 @@ public class RentalUserController {
 
         } catch (Exception e) {
             log.error("Fout bij opslaan gebruiker: ", e);
-            model.addAttribute("errorMessage", "Er is een technische fout opgetreden bij het opslaan.");
+            model.addAttribute("errorMessage",
+                    "Er is een technische fout opgetreden bij het opslaan.");
             return "users/add-user";
         }
         return "redirect:/users";

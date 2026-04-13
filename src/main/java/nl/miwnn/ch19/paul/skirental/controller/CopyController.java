@@ -52,7 +52,8 @@ public class CopyController {
     @PostMapping("/add-snowboard/{snowboardId}")
     public String addSnowboardCopy(@PathVariable Long snowboardId, RedirectAttributes redirectAttributes) {
         copyService.addSnowboardCopy(snowboardId);
-        redirectAttributes.addFlashAttribute("successMessage", "Snowboard exemplaar toegevoegd!");
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Snowboard exemplaar toegevoegd!");
         return "redirect:/snowboard/" + snowboardId;
     }
 

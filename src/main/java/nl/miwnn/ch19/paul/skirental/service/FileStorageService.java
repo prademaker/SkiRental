@@ -12,7 +12,6 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    // Map waar de plaatjes komen te staan (buiten de target folder!)
     private final Path root = Paths.get("uploads");
 
     public FileStorageService() {
@@ -27,7 +26,6 @@ public class FileStorageService {
 
     public String save(MultipartFile file) {
         try {
-            // Maak een unieke naam: bijv. a1b2-ski.jpg
             String filename = UUID.randomUUID().toString() + "-" + file.getOriginalFilename();
             Files.copy(file.getInputStream(), this.root.resolve(filename));
             return filename;

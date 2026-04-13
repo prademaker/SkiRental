@@ -35,7 +35,8 @@ public class CustomerController {
                                BindingResult bindingResult,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.customer", bindingResult);
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.customer",
+                    bindingResult);
             redirectAttributes.addFlashAttribute("customer", customer);
             return "redirect:/customer/all";
         }

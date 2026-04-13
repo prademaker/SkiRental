@@ -37,8 +37,8 @@ public class RentalController {
 
         Rental rental = new Rental();
         rental.setCopy(copy);
-        rental.setStartDate(LocalDate.now()); // Vandaag als startdatum
-        rental.setEndDate(LocalDate.now().plusDays(7)); // Standaard 1 week
+        rental.setStartDate(LocalDate.now());
+        rental.setEndDate(LocalDate.now().plusDays(7));
 
         model.addAttribute("rental", rental);
         model.addAttribute("customers", customerRepository.findAll());
@@ -55,7 +55,8 @@ public class RentalController {
                 "Verhuur succesvol! Totaalprijs: €" +
                         String.format("%.2f", savedRental.getTotalPrice()));
 
-        return "redirect:/ski/all"; // Of naar een verhuuroverzicht
+        return "redirect:/ski/all";
+
     }
 }
 

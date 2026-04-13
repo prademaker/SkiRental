@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author Paul Rademaker
- * ---- Programma dat dingen doet ----
  * ---- VERVANG MIJ ----
  */
 
@@ -27,18 +26,15 @@ public class RentalService {
     public Rental createRental(Rental rental) {
         Copy copy = copyRepository.findById(rental.getCopy().getId()).orElseThrow();
 
-        // 1. Prijs bepalen
         double dailyPrice = (copy.getSki() != null) ?
                 copy.getSki().getDailyPrice() :
                 copy.getSnowboard().getDailyPrice();
 
-        // 2. Dagen berekenen
         long days = java.time.temporal.ChronoUnit.DAYS.between(rental.getStartDate(), rental.getEndDate());
-        if (days <= 0) days = 1; // Minimum 1 dag
+        if (days <= 0) days = 1;
 
         rental.setTotalPrice(days * dailyPrice);
 
-        // 3. Item op 'niet beschikbaar' zetten
         copy.setAvailable(false);
         copyRepository.save(copy);
 

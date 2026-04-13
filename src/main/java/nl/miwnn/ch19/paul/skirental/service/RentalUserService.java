@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author Paul Rademaker
- * ---- Programma dat dingen doet ----
  * ---- VERVANG MIJ ----
  */
 

@@ -3,7 +3,6 @@ package nl.miwnn.ch19.paul.skirental.service;
 import nl.miwnn.ch19.paul.skirental.model.Ski;
 import nl.miwnn.ch19.paul.skirental.model.Type;
 import nl.miwnn.ch19.paul.skirental.repository.SkiRepository;
-import nl.miwnn.ch19.paul.skirental.repository.TypeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
